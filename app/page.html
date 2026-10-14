@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DR grading pipeline</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f4f6f8;color:#1d2733}
+header{background:#14324a;color:#fff;padding:14px 24px}header h1{margin:0;font-size:20px}header p{margin:4px 0 0;font-size:13px;opacity:.85}
+main{max-width:1180px;margin:0 auto;padding:18px}
+.panel{background:#fff;border-radius:8px;padding:14px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+label{margin-right:14px;font-size:14px;display:inline-block;margin-bottom:6px}select,input,button{font-size:14px;max-width:100%}
+button{background:#14324a;color:#fff;border:0;padding:8px 18px;border-radius:5px;cursor:pointer}button:disabled{background:#8a9aa8}
+.stage h3{margin:0 0 6px;font-size:16px}.stage .t{color:#5b6b78;font-size:12px}
+.imgs{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}.imgs figure{margin:0;text-align:center;font-size:12px;color:#44525e}.imgs img{max-width:100%}
+.grade{font-size:22px;font-weight:600}.bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:2px 0}.bar span{display:inline-block;height:12px;background:#2e7bbd;border-radius:3px}
+.notice{font-size:12px;color:#7a4b00;background:#fff4e0;padding:8px 12px;border-radius:6px}
+</style></head><body>
+<header><h1>Diabetic-retinopathy grading pipeline</h1>
+<p>Stage 1 quality - Stage 2 preprocessing - Stage 3 vessels - Stage 4 lesions - ConvNeXt-Tiny + CORN grader (3 seeds) - uncertainty - explanations</p></header>
+<main>
+<div class="panel">
+<div><label>Demo image (known grade): <select id="demo"><option value="">- choose -</option></select></label>
+<label>or upload: <input type="file" id="file" accept="image/*"></label></div>
+<div style="margin-top:10px"><label>Grader arm: <select id="arm"><option value="crop">fundus-cropped (final model; chosen after the external evaluation)</option><option value="direct">whole image resized</option></select></label>
+<label><input type="checkbox" class="ex" value="grad_cam" checked> Grad-CAM</label>
+<label><input type="checkbox" class="ex" value="integrated_gradients"> Integrated Gradients (16 steps; minutes on CPU)</label>
+<label><input type="checkbox" class="ex" value="occlusion"> Occlusion (stride 64; minutes on CPU)</label>
+<button id="run">Run the pipeline</button> <span id="status"></span></div>
+<p class="notice">Research prototype - not a medical device; its output is not a diagnosis. Explanation maps show where the score is sensitive; they do not show that lesions were detected. Uploaded images are deleted after the run.</p>
+</div>
+<div id="out"></div>
+</main>
+<script>
+const GR=["No DR","Mild NPDR","Moderate NPDR","Severe NPDR","Proliferative DR"];
+fetch('/demo-list').then(r=>r.json()).then(list=>{const s=document.getElementById('demo');
+ list.forEach(d=>{const o=document.createElement('option');o.value=d.file;o.textContent=`${d.source} - reference grade ${d.reference_grade} (${GR[d.reference_grade]}) - ${d.file}`;s.appendChild(o);});});
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function card(st){const d=document.createElement('div');d.className='panel stage';
+ let h=`<h3>${esc(st.title)}</h3>`;if(st.seconds!==null)h+=`<div class="t">${st.seconds} s</div>`;
+ if(st.data&&st.data.grade!==undefined){h+=`<div class="grade">Grade ${st.data.grade}: ${esc(st.data.grade_name)}</div>`;
+  st.data.probabilities.forEach((p,i)=>{h+=`<div class="bar">${GR[i]} <span style="width:${Math.round(p*300)}px"></span> ${(p*100).toFixed(1)} %</div>`});}
+ h+=`<p>${esc(st.text)}</p><div class="imgs">`;st.images.forEach(im=>{h+=`<figure><img src="data:image/png;base64,${im.png}" alt="${esc(im.caption)}"><figcaption>${esc(im.caption)}</figcaption></figure>`});
+ d.innerHTML=h+'</div>';return d;}
+document.getElementById('run').onclick=async()=>{
+ const btn=document.getElementById('run'),out=document.getElementById('out'),st=document.getElementById('status');
+ const body={arm:document.getElementById('arm').value,explanations:[...document.querySelectorAll('.ex:checked')].map(x=>x.value)};
+ const f=document.getElementById('file').files[0],demo=document.getElementById('demo').value;
+ if(f){body.filename=f.name;body.upload=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.readAsDataURL(f)});}
+ else if(demo){body.demo=demo}else{alert('Choose a demo image or upload one');return}
+ btn.disabled=true;out.innerHTML='';st.textContent='running ...';
+ const job=await (await fetch('/run',{method:'POST',body:JSON.stringify(body)})).json();
+ if(job.error){st.textContent=job.error;btn.disabled=false;return}
+ let shown=0;const poll=async()=>{const r=await (await fetch('/job/'+job.id)).json();
+  while(shown<r.stages.length){out.appendChild(card(r.stages[shown]));shown++}
+  if(r.error){st.textContent='error: '+r.error;btn.disabled=false;return}
+  if(r.done){st.textContent='finished';btn.disabled=false}else{st.textContent=`running stage ${shown+1} ...`;setTimeout(poll,800)}};poll();};
+</script></body></html>

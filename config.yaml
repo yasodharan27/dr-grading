@@ -1,0 +1,28 @@
+# The only file a user edits. Relative paths are resolved against the folder of this file.
+# A copy named config.local.yaml next to it (git-ignored) is read instead when it exists,
+# and any script accepts --config PATH.
+
+# Model weights (filled by `python scripts/download_weights.py`).
+weights_dir: weights
+
+# Everything the scripts write (predictions, tables, figures, demo runs).
+output_dir: outputs
+
+# PyTorch stages (vessels, lesions): cpu or cuda. TensorFlow chooses its own device.
+device: cpu
+
+# Grader arm used by the pipeline and the demo: crop (fundus-cropped frames) or direct (whole image resized).
+arm: crop
+
+# Dataset roots. Only the datasets a command needs have to exist; see data/README.md for the
+# folder structure expected inside each root.
+datasets:
+  aptos: datasets/APTOS2019          # train_images/<id_code>.png
+  eyepacs: datasets/EyePACS          # train/<image>.jpeg
+  eyeq: datasets/EyeQ                # train/ and test/ with labels.csv and images/
+  idrid: datasets/IDRiD              # B. Disease Grading/ and A. Segmentation/ as distributed
+  tjdr: datasets/TJDR                # TJDR as distributed (train/ and test/ with images and masks)
+  ddr: datasets/DDR                  # DR_grading/test/<image>.jpg and DR_grading/test.txt
+
+# Demo images shown in the web app's "known grade" list (labels.csv: file, source, reference_grade).
+demo_images: data/demo_images

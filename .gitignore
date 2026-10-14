@@ -1,0 +1,31 @@
+# model weights are published separately (GitHub Release + Zenodo), never in git
+weights/
+*.h5
+*.keras
+*.pt
+*.pth
+*.safetensors
+
+# datasets, images and everything derived from them
+datasets/
+outputs/
+frames/
+*.npy
+*.npz
+!data/parity/*.npz
+
+# Python and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# local settings and secrets
+.env
+config.local.yaml
+.vscode/
+.idea/
