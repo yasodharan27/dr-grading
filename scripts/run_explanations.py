@@ -43,7 +43,8 @@ def localisation(args, cfg, out):
     for arm in args.arms:
         graders = list(gr.load_arm(cfg, arm).values())
         print(f"{arm}: {len(items)} images")
-        rows += explain.localisation_study(items, arm, graders, occlusion_images=occlusion_images, progress_csv=progress)
+        rows += explain.localisation_study(items, arm, graders, methods=tuple(args.methods), occlusion_images=occlusion_images,
+                                           progress_csv=progress)
         del graders
     import pandas as pd
     per_image = pd.read_csv(progress)
@@ -81,6 +82,9 @@ def main(argv=None):
     a = sub.add_parser("localisation")
     a.add_argument("--arms", nargs="+", default=list(ARMS), choices=ARMS)
     a.add_argument("--limit", type=int, help="only the first N images of the sample")
+    a.add_argument("--methods", nargs="+", default=["grad_cam", "integrated_gradients", "occlusion"],
+                   choices=("grad_cam", "integrated_gradients", "occlusion"),
+                   help="Integrated Gradients (32 steps x 3 seeds) and Occlusion take minutes per image on a CPU")
     b = sub.add_parser("shap")
     b.add_argument("image")
     b.add_argument("--arm", default="crop", choices=ARMS)

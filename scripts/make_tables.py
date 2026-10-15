@@ -95,6 +95,8 @@ def markdown(dev, models, contrasts, unc, localisation):
         lines.append(f"| {r.arm} | {r.seed} | {f(r.aptos_val_qwk, 4)} | {f(r.eyepacs_val_qwk, 4)} | {f(r.selection, 4)} | {r.best_epoch_index_0based} | {r.epochs_run} |")
     for dataset, population in (("ddr", "primary_3540"), ("idrid", "primary_100")):
         sub = models[(models.dataset == dataset) & (models.population == population)]
+        if sub.empty:                                                    # a run restricted to one dataset
+            continue
         lines += ["", f"## {dataset.upper()} {population} (n = {int(sub.n.iloc[0])}): QWK", "",
                   "| model | seed 42 | seed 123 | seed 2026 | mean (SD) | seed ensemble |", "|---|---|---|---|---|---|"]
         for r in sub.itertuples():

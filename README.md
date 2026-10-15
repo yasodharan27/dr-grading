@@ -65,7 +65,8 @@ and J (whole-image frames) is not better than P-EP there (-0.035, interval -0.10
 
 ## Install
 
-Python 3.11 is the tested version (3.12 and 3.13 are not tested here).
+Python 3.11 is the version the code was developed and tested with (locally and in the Docker image); the GPU smoke test
+also ran on a Colab runtime with a newer Python.
 
 ```bash
 python -m venv .venv && . .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -84,6 +85,19 @@ python -m drgrade.pipeline data/demo_images/idrid_grade3_IDRiD_001.jpg --explain
 
 This prints the grade with the written summary and writes a JSON and a figure per image to `outputs/pipeline/`. On a
 four-core CPU one image with Grad-CAM takes a few minutes; Integrated Gradients and Occlusion add several each.
+
+Example output for two of the demo images (IDRiD training set; the second shows a disagreement with the reference
+grade 0: the pipeline gives grade 2 and flags the result for review because a flip or rotation changes a seed's grade):
+
+![Example, reference grade 3](figures/example_idrid_grade3_IDRiD_001.png)
+
+![Example, reference grade 0](figures/example_idrid_grade0_IDRiD_118.png)
+
+Superpixel SHAP of the expected grade for the first image (`scripts/run_explanations.py shap`, three-seed mean, figures
+only). The superpixels over its exudates are small and of mixed sign, and the largest positive values lie over the
+upper vessel arcade: the map shows where the score is sensitive, not where lesions are.
+
+![SHAP, reference grade 3](figures/shap_idrid_grade3_IDRiD_001_crop.png)
 
 ```python
 from drgrade.config import load_config
