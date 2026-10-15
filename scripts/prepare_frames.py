@@ -34,8 +34,11 @@ def select(entries, limit=None, ids=None, limit_val=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--dataset", required=True, choices=sorted(DATASETS))
-    parser.add_argument("--arm", required=True, choices=("crop", "direct"))
+    parser.add_argument("--dataset", choices=sorted(DATASETS), help="the dataset to build frames of (not needed with --from-cache)")
+    parser.add_argument("--arm", choices=("crop", "direct"), help="required, except with --from-cache when the source index names it")
+    parser.add_argument("--from-cache", metavar="DIR",
+                        help="instead of building from raw images, copy the first --limit / --limit-val frames of an existing frame cache "
+                             "with the same shard layout into --out (e.g. a few hundred frames of a large cache on a mounted drive)")
     parser.add_argument("--splits", nargs="+", default=["train", "val"], choices=("train", "val"))
     parser.add_argument("--limit", type=int, help="only the first N images of the train split (of each split without --limit-val)")
     parser.add_argument("--limit-val", type=int, help="only the first N images of the val split")
@@ -45,6 +48,17 @@ def main(argv=None):
     parser.add_argument("--out", help="override <output_dir>/frames/<dataset>_<arm>")
     args = parser.parse_args(argv)
     cfg = load_config(args.config)
+    if args.from_cache:
+        if not args.out:
+            sys.exit("--from-cache needs --out")
+        counts = {s: n for s, n in (("train", args.limit), ("val", args.limit_val if args.limit_val is not None else args.limit)) if n}
+        if not counts:
+            sys.exit("--from-cache needs --limit (and optionally --limit-val)")
+        frames.take(args.from_cache, args.out, counts, args.arm)
+        print(frames.json_summary(args.out))
+        return
+    if not (args.dataset and args.arm):
+        sys.exit("--dataset and --arm are required")
     read_entries, path_of = DATASETS[args.dataset]
     chosen = select({s: read_entries()[s] for s in args.splits}, args.limit, set(args.ids) if args.ids else None, args.limit_val)
     items = {s: [(i, g, path_of(cfg, i)) for i, g in rows] for s, rows in chosen.items()}

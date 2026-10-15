@@ -55,6 +55,11 @@ APTOS, 3,512 EyePACS images) are scored and the mean of the two QWKs is monitore
 4 epochs without improvement (down to 1e-6), training stops after 12, at most 50 epochs; the best epoch is kept.
 `--frame crop` cuts every image to its fundus box before the resize, `--frame direct` resizes the whole image.
 
+A frame cache that already exists with this shard layout (`frames_<split>_<nnn>.npy` and an `index.json`, float16, 512 x 512)
+can be used as it is: pass its folder as `--eyepacs-frames` (copy it to local disk first; reading 50 GB through a
+mounted drive is slow). `prepare_frames.py --from-cache DIR --limit N --limit-val M --out OUT` copies the first N
+training and M validation frames of such a cache into a small one.
+
 Disk for the frames of ONE arm (float16, 1.5 MB per frame): APTOS 3,651 frames 5.5 GB, EyePACS 35,122 frames 53 GB. A
 Colab T4 runtime has about 71 GB free, so build and train one arm at a time and delete the other arm's frames.
 

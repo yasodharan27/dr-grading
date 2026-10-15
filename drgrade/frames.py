@@ -88,14 +88,24 @@ def build(items, out_dir, arm, workers=4, shard_size=SHARD_SIZE, log=print):
 
 class FrameCache:
     """Read access: `entries(split)` in build order, `frame(image)` as float32 (512, 512, 3) in [0, 1], and the
-    arm the cache was built for. Refuses a folder without an index (an unfinished build)."""
+    arm the cache was built for. Refuses a folder without an index (an unfinished build).
 
-    def __init__(self, directory):
+    The index may come from `build` (it names its arm) or from an earlier build with the same shard layout, which
+    states the crop rule in its `version` text instead; pass `arm` for any other index."""
+
+    def __init__(self, directory, arm=None):
         path = os.path.join(directory, "index.json")
         if not os.path.exists(path):
             raise FrameCacheError(f"{directory} has no index.json: run scripts/prepare_frames.py first")
         index = read_json(path)
-        self.directory, self.arm, self.index = directory, index["arm"], index
+        found = index.get("arm") or ("crop" if str(index.get("version", "")).startswith("crop-frames") else None)
+        if arm and found and arm != found:
+            raise FrameCacheError(f"{directory} holds {found} frames, not {arm}")
+        if not (arm or found):
+            raise FrameCacheError(f"{directory}: the index does not name the arm; pass arm='crop' or 'direct'")
+        if index.get("dtype", "float16") != "float16" or index.get("frame_size", FRAME) != FRAME:
+            raise FrameCacheError(f"{directory} does not hold float16 {FRAME} x {FRAME} frames")
+        self.directory, self.arm, self.index = directory, arm or found, index
         self._where, self._entries, self._open = {}, {}, {}
         for name in sorted(index["shards"]):
             record = index["shards"][name]
@@ -121,6 +131,45 @@ class FrameCache:
             block = self._open[name] = np.load(os.path.join(self.directory, name), mmap_mode="r")
         return np.asarray(block[row], dtype=np.float32)
 
+    def geometry(self, image):
+        """(fundus box, native (h, w)) recorded for an image, or (None, None)."""
+        name, row = self._where[str(image)]
+        record = self.index["shards"][name]
+        box, native = record.get("boxes"), record.get("native_hw")
+        return (box[row] if box else None), (native[row] if native else None)
+
+
+def take(source_dir, out_dir, counts, arm=None, shard_size=SHARD_SIZE, log=print):
+    """A small local cache from the first `counts[split]` frames of each split of an existing cache with the same
+    layout, e.g. a few hundred frames of a large cache on a mounted drive, for smoke tests. Returns the new index."""
+    source = FrameCache(source_dir, arm)
+    os.makedirs(out_dir, exist_ok=True)
+    shards = {}
+    for split, n in counts.items():
+        rows = source.entries(split)[:n]
+        for k in range(0, len(rows), shard_size):
+            part = rows[k:k + shard_size]
+            name = f"frames_{split}_{k // shard_size:03d}.npy"
+            path = os.path.join(out_dir, name)
+            block = np.lib.format.open_memmap(path + ".part", mode="w+", dtype=np.float16, shape=(len(part), FRAME, FRAME, 3))
+            geometry = [source.geometry(image) for image, _ in part]
+            for row, (image, _) in enumerate(part):
+                block[row] = source.frame(image).astype(np.float16)
+            block.flush()
+            del block
+            os.replace(path + ".part", path)
+            record = {"split": split, "arm": source.arm, "images": [i for i, _ in part], "grades": [g for _, g in part],
+                      "boxes": [g[0] for g in geometry] if all(g[0] for g in geometry) else None,
+                      "native_hw": [g[1] for g in geometry] if all(g[1] for g in geometry) else None,
+                      "bytes": os.path.getsize(path)}
+            atomic_json(path + ".json", record)
+            shards[name] = record
+            log(f"  {name} ({len(part)} frames) from {source_dir}")
+    index = {"arm": source.arm, "frame_size": FRAME, "dtype": "float16",
+             "frames": {s: min(n, len(source.entries(s))) for s, n in counts.items()}, "shards": shards}
+    atomic_json(os.path.join(out_dir, "index.json"), index)
+    return index
+
 
 def cache_dir(cfg, dataset, arm):
     return os.path.join(cfg["output_dir"], "frames", f"{dataset}_{arm}")
@@ -128,8 +177,8 @@ def cache_dir(cfg, dataset, arm):
 
 def describe(directory):
     index = read_json(os.path.join(directory, "index.json"))
-    boxes = np.asarray([b for s in index["shards"].values() for b in s["boxes"]], np.float64)
-    native = np.asarray([n for s in index["shards"].values() for n in s["native_hw"]], np.float64)
+    boxes = np.asarray([b for s in index["shards"].values() for b in (s.get("boxes") or [])], np.float64)
+    native = np.asarray([n for s in index["shards"].values() for n in (s.get("native_hw") or [])], np.float64)
     if not len(boxes):
         return {"frames": index["frames"]}
     height, width = (boxes[:, 1] - boxes[:, 0]) / native[:, 0], (boxes[:, 3] - boxes[:, 2]) / native[:, 1]

@@ -49,6 +49,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config")
     parser.add_argument("--only", nargs="+", choices=("frames", "grader", "quality", "lesions"))
+    parser.add_argument("--eyepacs-cache", metavar="DIR",
+                        help="an existing EyePACS crop-frame cache with the same shard layout, to take the EyePACS frames from instead of "
+                             "building them from raw images (e.g. .../datasets/EyePACS/adaptation_frames_crop_v1)")
     parser.add_argument("--allow-cpu", action="store_true", help="run without a GPU (very slow; for checking the script only)")
     args = parser.parse_args(argv)
     cfg = load_config(args.config)
@@ -86,8 +89,13 @@ def main(argv=None):
             if os.path.exists(os.path.join(target, "index.json")):
                 print(f"  {dataset}: frames already built in {target}")
                 continue
-            code, _ = run(["scripts/prepare_frames.py", "--dataset", dataset, "--arm", "crop", "--limit", str(train), "--limit-val", str(val),
-                           "--out", target, "--workers", "4"] + cfg_args, lines)
+            if dataset == "eyepacs" and args.eyepacs_cache:
+                command = ["scripts/prepare_frames.py", "--from-cache", args.eyepacs_cache, "--arm", "crop", "--limit", str(train),
+                           "--limit-val", str(val), "--out", target]
+            else:
+                command = ["scripts/prepare_frames.py", "--dataset", dataset, "--arm", "crop", "--limit", str(train), "--limit-val", str(val),
+                           "--out", target, "--workers", "4"]
+            code, _ = run(command + cfg_args, lines)
             check(f"frames {dataset}", code == 0 and os.path.exists(os.path.join(target, "index.json")))
 
     if "grader" in wanted:
