@@ -42,10 +42,15 @@ def clahe(bgr, clip_limit=CLAHE_CLIP_LIMIT, tile_grid=CLAHE_TILE_GRID):
     return cv2.cvtColor(cv2.merge((l_channel, a_channel, b_channel)), cv2.COLOR_LAB2BGR)
 
 
-def stage2(path):
-    """The Stage-2 image of one raw file: RGB uint8 at the native size."""
+def stage2(path, jpeg_round_trip=False):
+    """The Stage-2 image of one raw file: RGB uint8 at the native size. `jpeg_round_trip`: pass the result through
+    a JPEG encode / decode at quality 95 (OpenCV's default), which is what writing the Stage-2 image to a .jpg file
+    does; only the IDRiD lesion-training images of the released Stage-4 model went through it."""
     import cv2
-    return cv2.cvtColor(clahe(gamma_correction(read_bgr(path))), cv2.COLOR_BGR2RGB)
+    out = clahe(gamma_correction(read_bgr(path)))
+    if jpeg_round_trip:
+        out = cv2.imdecode(cv2.imencode(".jpg", out, [cv2.IMWRITE_JPEG_QUALITY, 95])[1], cv2.IMREAD_COLOR)
+    return cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
 
 
 def fundus_box(bgr):
@@ -89,10 +94,18 @@ def frames(path):
 
 
 def frame(path, arm):
-    """The grader's input frame of one raw image for `arm` ('crop' or 'direct')."""
+    """The grader's input frame of one raw image for `arm` ('crop' or 'direct'); the same values as `frames(path)[arm]`
+    with only the requested resize computed."""
     if arm not in ("crop", "direct"):
         raise ValueError(f"arm must be 'crop' or 'direct', got {arm!r}")
-    return frames(path)[arm]
+    native = stage2(path)
+    bgr = read_bgr(path)
+    if bgr.shape[:2] != native.shape[:2]:
+        raise ValueError(f"{path}: the raw image and its Stage-2 image differ in size")
+    if arm == "direct":
+        return resize_frame(native)
+    top, bottom, left, right = fundus_box(bgr)
+    return resize_frame(np.ascontiguousarray(native[top:bottom, left:right]))
 
 
 def resize_with_extra_channel(rgb, extra, size=FRAME_SIZE):

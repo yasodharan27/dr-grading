@@ -1,0 +1,9 @@
+image_id,reason
+TJDR_train_041,byte-identical to TJDR_train_039
+TJDR_train_042,byte-identical to TJDR_train_040
+TJDR_train_091,byte-identical to TJDR_train_089
+TJDR_train_174,byte-identical to TJDR_train_173
+TJDR_train_105,same-eye near-duplicate of TJDR_train_100
+TJDR_test_021,byte-identical to TJDR_train_092 (cross-split duplicate)
+TJDR_test_023,byte-identical to TJDR_train_101 (cross-split duplicate)
+TJDR_test_003,same-eye near-duplicate of TJDR_test_002

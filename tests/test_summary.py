@@ -36,6 +36,7 @@ def test_the_written_summary_states_only_what_the_outputs_say():
     assert "microaneurysms (" not in text                                      # not found -> not listed
     assert "35 % of its most influential area" in text
     assert "No reliability flag" in text and "exact in 92 %" in text
+    assert "other cameras or clinics than the APTOS and EyePACS validation sets can be less reliable" in text
     lines = summary.written_summary(3, [0, 0, 0.1, 0.9, 0], {k: 0.0 for k in CLASSES}, {}, True,
                                     ["the three models give different grades [3, 2, 3]"], rates, "x")
     text = " ".join(lines)

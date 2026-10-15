@@ -23,11 +23,10 @@ SPLITS = os.path.join(ROOT, "data", "splits")
 
 
 def image_paths(cfg, dataset, ids):
-    root = cfg["datasets"][dataset]
     if dataset == "ddr":
-        folder = os.path.join(root, "DR_grading", "test")
+        folder = os.path.join(cfg["datasets"]["ddr"], "DR_grading", "test")
         return [os.path.join(folder, i) for i in ids]
-    folder = os.path.join(root, "B. Disease Grading", "1. Original Images", "b. Testing Set")
+    folder = os.path.join(cfg["datasets"]["idrid_grading"], "1. Original Images", "b. Testing Set")
     return [os.path.join(folder, f"{i}.jpg") for i in ids]
 
 

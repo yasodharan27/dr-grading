@@ -29,6 +29,7 @@ def main(argv=None):
     parser.add_argument("--config")
     parser.add_argument("--from-local", help="folder holding the release files under their release names")
     parser.add_argument("--inference-only", action="store_true")
+    parser.add_argument("--only", nargs="+", metavar="FILE", help="download only these files of the manifest")
     args = parser.parse_args(argv)
     cfg = load_config(args.config)
     with open(os.path.join(ROOT, "weights_manifest.json"), encoding="utf-8") as fh:
@@ -38,6 +39,8 @@ def main(argv=None):
     failed = []
     for entry in manifest["files"]:
         if args.inference_only and entry.get("training_only"):
+            continue
+        if args.only and entry["file"] not in args.only:
             continue
         target = os.path.join(cfg["weights_dir"], entry["file"])
         if os.path.exists(target) and os.path.getsize(target) == entry["bytes"]:

@@ -17,12 +17,13 @@ arm: crop
 # Dataset roots. Only the datasets a command needs have to exist; see data/README.md for the
 # folder structure expected inside each root.
 datasets:
-  aptos: datasets/APTOS2019          # train_images/<id_code>.png
-  eyepacs: datasets/EyePACS          # train/<image>.jpeg
-  eyeq: datasets/EyeQ                # train/ and test/ with labels.csv and images/
-  idrid: datasets/IDRiD              # B. Disease Grading/ and A. Segmentation/ as distributed
-  tjdr: datasets/TJDR                # TJDR as distributed (train/ and test/ with images and masks)
-  ddr: datasets/DDR                  # DR_grading/test/<image>.jpg and DR_grading/test.txt
+  aptos: datasets/APTOS2019                      # train_images/<id_code>.png
+  eyepacs: datasets/EyePACS                      # train/<image>.jpeg
+  eyeq: datasets/EyeQ                            # train/ and test/, each with labels.csv and images/
+  idrid_segmentation: datasets/IDRiD/A. Segmentation   # 1. Original Images/ and 2. All Segmentation Groundtruths/
+  idrid_grading: datasets/IDRiD/B. Disease Grading     # 1. Original Images/ and 2. Groundtruths/
+  tjdr: datasets/TJDR                            # train/ and test/, each with image/ and annotation/
+  ddr: datasets/DDR                              # DR_grading/test/<image>.jpg
 
 # Demo images shown in the web app's "known grade" list (labels.csv: file, source, reference_grade).
 demo_images: data/demo_images
