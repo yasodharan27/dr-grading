@@ -1,0 +1,7 @@
+# LF everywhere (the Docker image runs app/entrypoint.sh with /bin/sh); binary files untouched.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.npz binary
+*.h5 binary

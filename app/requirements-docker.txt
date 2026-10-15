@@ -1,0 +1,18 @@
+# Inference image (app/Dockerfile). torch and torchvision are installed first from the CPU-only index;
+# TensorFlow is the CPU-only wheel of the same version as requirements.txt.
+tensorflow-cpu==2.21.0
+keras==3.15.1
+segmentation-models-pytorch==0.5.0
+timm==1.0.30
+huggingface_hub==2.0.0
+safetensors==0.8.0
+numpy==2.4.6
+scipy==1.17.1
+scikit-image==0.26.0
+scikit-learn==1.9.0
+opencv-python-headless==5.0.0.93
+pandas==3.0.5
+matplotlib==3.11.1
+Pillow==12.3.0
+h5py==3.14.0
+PyYAML==6.0.3

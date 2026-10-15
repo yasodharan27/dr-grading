@@ -22,15 +22,14 @@ os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 
 from drgrade import explain, lesions, preprocess, quality, vessels  # noqa: E402
 from drgrade import grader as gr  # noqa: E402
-from drgrade.config import ARMS, SEEDS, load_config, weight_path  # noqa: E402
+from drgrade.config import ARMS, SEEDS, configure_threads, load_config, weight_path  # noqa: E402
 
 TOLERANCE = {"quality": 1e-5, "frame_direct": 1e-6, "frame_crop": 1e-6, "vessel": 1e-5, "lesion_maps": 0, "logits": 1e-5, "gradcam": 1e-4}
 IMAGE_TYPES = (".png", ".jpg", ".jpeg", ".tif", ".tiff")
 
 
 def compute(cfg, paths, with_gradcam=False, log=print):
-    import torch
-    torch.set_num_threads(max(1, os.cpu_count() or 1))
+    configure_threads()
     out = {"names": np.array([os.path.basename(p) for p in paths])}
     q_model = quality.load_model(weight_path(cfg, "quality"))
     v_model = vessels.load_model(weight_path(cfg, "vessels"), "cpu")
@@ -94,7 +93,14 @@ def main(argv=None):
     group.add_argument("--write")
     parser.add_argument("--gradcam", action="store_true", help="also compute (and compare) the Grad-CAM maps")
     parser.add_argument("--save-new", help="also save this run's outputs to this .npz")
+    parser.add_argument("--tolerance", action="append", default=[], metavar="KEY=VALUE",
+                        help=f"override a tolerance, e.g. logits=1e-4 (keys: {', '.join(TOLERANCE)}); for another platform's reference")
     args = parser.parse_args(argv)
+    for item in args.tolerance:
+        key, value = item.split("=", 1)
+        if key not in TOLERANCE:
+            sys.exit(f"unknown tolerance {key!r}; keys: {list(TOLERANCE)}")
+        TOLERANCE[key] = float(value)
     cfg = load_config(args.config)
     paths = [os.path.join(args.images, n) for n in sorted(os.listdir(args.images)) if n.lower().endswith(IMAGE_TYPES)]
     if not paths:

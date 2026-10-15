@@ -2,7 +2,7 @@
 the stages appear one after another.
 
     python app/server.py                       # http://localhost:8501
-    python app/server.py --host 0.0.0.0        # inside Docker
+    python app/server.py --host 0.0.0.0        # inside Docker (HOST and PORT environment variables work too)
 
 Only Python's standard library serves the page. An uploaded image is written to a temporary file for the run and
 deleted as soon as the run ends; nothing uploaded is kept. One image runs at a time. Research prototype: not a
@@ -230,8 +230,8 @@ def read_page():
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Web demo of the DR grading pipeline")
     parser.add_argument("--config")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8501)
+    parser.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"), help="default: $HOST or 127.0.0.1")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8501")), help="default: $PORT or 8501")
     args = parser.parse_args(argv)
     os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
     from drgrade.config import load_config

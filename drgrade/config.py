@@ -23,9 +23,14 @@ def default_config_path():
     return local if os.path.exists(local) else os.path.join(ROOT, "config.yaml")
 
 
+#: Environment variables that override config.yaml (useful in containers: no rebuild to change a path).
+ENV_OVERRIDES = {"DRGRADE_WEIGHTS_DIR": "weights_dir", "DRGRADE_OUTPUT_DIR": "output_dir", "DRGRADE_DEMO_IMAGES": "demo_images",
+                 "DRGRADE_DEVICE": "device", "DRGRADE_ARM": "arm"}
+
+
 def load_config(path=None):
-    """The configuration as a dict with absolute paths."""
-    path = os.path.abspath(path or default_config_path())
+    """The configuration as a dict with absolute paths; DRGRADE_* environment variables override the file."""
+    path = os.path.abspath(path or os.environ.get("DRGRADE_CONFIG") or default_config_path())
     with open(path, encoding="utf-8") as fh:
         cfg = yaml.safe_load(fh) or {}
     base = os.path.dirname(path)
@@ -34,6 +39,9 @@ def load_config(path=None):
         return p if p is None or os.path.isabs(p) else os.path.normpath(os.path.join(base, p))
 
     cfg["config_path"] = path
+    for variable, key in ENV_OVERRIDES.items():
+        if os.environ.get(variable):
+            cfg[key] = os.environ[variable]
     for key in ("weights_dir", "output_dir", "demo_images"):
         cfg[key] = resolve(cfg.get(key))
     cfg["datasets"] = {k: resolve(v) for k, v in (cfg.get("datasets") or {}).items()}
@@ -42,6 +50,27 @@ def load_config(path=None):
     if cfg["arm"] not in ARMS:
         raise ValueError(f"arm must be one of {ARMS}, got {cfg['arm']!r}")
     return cfg
+
+
+def cpu_threads():
+    """Threads for the CPU stages: OMP_NUM_THREADS when set (containers often see more cores than they may use),
+    otherwise every core."""
+    value = os.environ.get("OMP_NUM_THREADS", "")
+    return int(value) if value.isdigit() and int(value) > 0 else max(1, os.cpu_count() or 1)
+
+
+def configure_threads():
+    """Applies `cpu_threads()` to PyTorch and TensorFlow (call before TensorFlow runs anything)."""
+    import tensorflow as tf
+    import torch
+    n = cpu_threads()
+    torch.set_num_threads(n)
+    try:
+        tf.config.threading.set_intra_op_parallelism_threads(n)
+        tf.config.threading.set_inter_op_parallelism_threads(min(2, n))
+    except RuntimeError:                                                   # TensorFlow already initialised: keep its setting
+        pass
+    return n
 
 
 def weight_path(cfg, key):

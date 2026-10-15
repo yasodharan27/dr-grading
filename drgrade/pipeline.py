@@ -19,7 +19,7 @@ import numpy as np
 
 from . import explain, lesions, preprocess, quality, uncertainty, vessels
 from . import grader as gr
-from .config import GRADES, SEEDS, load_config, weight_path
+from .config import GRADES, SEEDS, configure_threads, load_config, weight_path
 
 NOTICE = "Research prototype - not a medical device; its output is not a diagnosis."
 EXPLANATIONS = ("grad_cam", "integrated_gradients", "occlusion")
@@ -33,9 +33,8 @@ class Pipeline:
     """Loads the frozen models once. Only one arm's three graders are held in memory at a time."""
 
     def __init__(self, cfg, arm=None, log=print):
-        import torch
         self.cfg, self.device = cfg, cfg["device"]
-        torch.set_num_threads(max(1, os.cpu_count() or 1))
+        log(f"CPU threads: {configure_threads()}")
         log("loading Stage 1 (image quality) ...")
         self.quality = quality.load_model(weight_path(cfg, "quality"))
         log("loading Stage 3 (LWNet) and Stage 4 (lesion U-Net) ...")
@@ -80,7 +79,7 @@ class Pipeline:
         t = time.time()
         frame = f[arm]
         graders = [self.graders[s] for s in SEEDS]
-        fns = [explain.model_fn(g, batch_size=8) for g in graders]
+        fns = [explain.model_fn(g, batch_size=2) for g in graders]          # batch 2: faster and leaner than 8 on CPU
         logits = np.stack([fn(frame[None]) for fn in fns])                       # (3, 1, 4)
         e = uncertainty.ensemble(logits)
         grade = int(e["pred"][0])
