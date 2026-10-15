@@ -4,6 +4,11 @@ type: software
 title: "Quality-Aware Explainable Framework for Diabetic Retinopathy Detection"
 version: 1.0.0
 license: Apache-2.0
+repository-code: "https://github.com/yasodharan27/dr-grading"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23393863
+    description: "Archived model weights (Zenodo record)"
 authors:
   - family-names: Yasodharan
     given-names: "N. S."
@@ -27,7 +32,7 @@ abstract: >-
   uncertainty scores and selective prediction; Grad-CAM, Integrated Gradients, Occlusion and superpixel SHAP explain
   the grade, and a written summary states the result and a reliability flag. The repository contains the inference,
   evaluation and training code, a local web demo and Docker image, the evaluation lists and per-image predictions that
-  reproduce the reported results on the DDR and IDRiD test sets, and the released model weights' manifest. It is a
+  reproduce the reported results on the DDR and IDRiD test sets, and the manifest of the released model weights. It is a
   research prototype and not a medical device.
 keywords:
   - diabetic retinopathy

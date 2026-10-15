@@ -92,3 +92,14 @@ def test_ensemble_scores():
     e1, e2 = uncertainty.ensemble(certain), uncertainty.ensemble(split)
     assert e1["pred"][0] == 4 and e1["entropy"][0] < 1e-3 and e1["seed_disagreement"][0] < 1e-3
     assert e2["seed_pred"][:, 0].tolist() == [4, 0, 4] and e2["seed_disagreement"][0] > 1.5 and e2["entropy"][0] > 0.5
+
+
+def test_display_scale_changes_the_picture_not_the_map():
+    heat = np.zeros((50, 50), np.float32)
+    heat[10, 10] = 100.0                                                   # one extreme pixel
+    heat[20:30, 20:30] = 1.0
+    before = heat.copy()
+    shown = explain.display_scale(heat)
+    assert np.array_equal(heat, before)                                    # the map itself is untouched
+    assert shown.max() == 1.0 and shown[25, 25] == pytest.approx(1.0) and shown.min() == 0.0
+    assert explain.display_scale(np.zeros((4, 4))).max() == 0.0

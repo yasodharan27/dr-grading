@@ -88,7 +88,7 @@ $\alpha_k = \frac{1}{Z}\sum_{ij} \partial s / \partial A^k_{ij}$ and $L = \mathr
 
 $$\mathrm{IG}_i(x) = (x_i - x'_i)\,\frac1m \sum_{j=1}^{m} \frac{\partial s}{\partial x_i}\!\left(x' + \tfrac{j - 1/2}{m}(x - x')\right), \qquad \sum_i \mathrm{IG}_i \approx s(x) - s(x').$$
 
-The reported gap $|\sum_i \mathrm{IG}_i - (s(x) - s(x'))|$ is the completeness check; the map is $\sum_c |\mathrm{IG}|$ divided by its maximum. 32 steps in the localisation study, 16 in the interactive demo.
+The reported gap $|\sum_i \mathrm{IG}_i - (s(x) - s(x'))|$ is the completeness check; the map is $\sum_c |\mathrm{IG}|$ divided by its maximum, and that is the map the localisation numbers use. For **display** (the overlays in the figures and the demo) the map is divided by its 99th percentile and clipped to $[0,1]$, because a few extreme pixels otherwise leave the picture nearly empty; this changes no attribution and no number. 32 steps in the localisation study, 16 in the interactive demo.
 
 **Occlusion.** The drop $s(x) - s(x \text{ with a } 64 \times 64 \text{ patch set to black})$ at stride 32 (64 in the demo), averaged over the patches that cover a pixel; the positive part is shown.
 

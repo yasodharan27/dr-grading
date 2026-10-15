@@ -68,4 +68,4 @@ A Space builds the image itself and cannot mount a folder, so the container down
 4. In the Space settings, set the variables `PORT=7860`, `DRGRADE_DOWNLOAD_WEIGHTS=1`,
    `DRGRADE_WEIGHTS_DIR=/home/app/weights` and `OMP_NUM_THREADS=2` (CPU basic has two cores).
 
-The weights download needs the published weights release (`weights_manifest.json`, `release.base_url`).
+The weights download needs the published Zenodo record of the weights (`weights_manifest.json`, `release.url_template`).

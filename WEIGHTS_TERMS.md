@@ -1,7 +1,8 @@
 # Terms of the released model weights
 
 The trained weights (the `.h5`, `.keras` and `.pt` files listed in `weights_manifest.json`) are published separately
-from this repository, as release assets with an archived copy. They are **not** under the Apache License of the code.
+from this repository, archived as files in a Zenodo record (doi:10.5281/zenodo.23393863) that the GitHub release
+links to. They are **not** under the Apache License of the code.
 
 - **Research use only.** The weights are for research and educational use.
 - **Not a medical device.** They are not for clinical use, not for diagnosis, and not for any decision about a patient.

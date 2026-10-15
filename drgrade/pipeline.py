@@ -121,8 +121,9 @@ class Pipeline:
             else:
                 raise ValueError(f"unknown explanation {name!r}; choose from {EXPLANATIONS}")
             overlaps[summary.METHOD_NAMES[name]] = explain.map_on_lesions(heat, lesions_frame)
+            shown = explain.display_scale(heat) if name == "integrated_gradients" else heat     # display only
             yield {"stage": "explanation", "method": name, "label": label, "seconds": time.time() - t, "map": heat,
-                   "overlay": explain.overlay(frame, heat)}
+                   "display_map": shown, "overlay": explain.overlay(frame, shown)}
 
         t = time.time()
         review, reasons, rates = summary.reliability(q["label"], seeds_pred, tta_change, entropy, self.calibration["arms"][arm])
@@ -178,10 +179,20 @@ def figure(result, views, path):
         ax.set_title(title, fontsize=10)
     u = result["uncertainty"]
     probabilities = "  ".join(f"{g.split()[0]} {p:.2f}" for g, p in zip(GRADES, result["probabilities"]))
+    s = result.get("summary")
+    if s is None:
+        flag = ""
+    elif s["review_recommended"]:
+        flag = "  |  REVIEW RECOMMENDED: " + "; ".join(s["reasons"])
+    else:
+        flag = "  |  no reliability flag"
+    note = "Explanation maps show where the score is sensitive, not that lesions were detected."
+    if "integrated_gradients" in result["explanations"]:
+        note += " Integrated Gradients is scaled to its 99th percentile for display."
     fig.suptitle(f"{result['image']}  |  quality: {result['quality']['label']}  |  grade {result['grade']}: {result['grade_name']}  |  "
                  f"referable: {'yes' if result['referable'] else 'no'}\n{probabilities}\nensemble entropy {u['entropy']:.2f}  |  "
-                 f"seed grades {list(result['per_seed'].values())}  |  TTA spread {u['tta_expected_grade_sd']:.2f}\n"
-                 f"Explanation maps show where the score is sensitive, not that lesions were detected. {NOTICE}", fontsize=11)
+                 f"seed grades {list(result['per_seed'].values())}  |  TTA spread {u['tta_expected_grade_sd']:.2f}{flag}\n"
+                 f"{note} {NOTICE}", fontsize=11)
     fig.savefig(path, dpi=100)
     plt.close(fig)
     return path

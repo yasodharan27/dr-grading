@@ -35,7 +35,8 @@ def main(argv=None):
     with open(os.path.join(ROOT, "weights_manifest.json"), encoding="utf-8") as fh:
         manifest = json.load(fh)
     os.makedirs(cfg["weights_dir"], exist_ok=True)
-    base = manifest["release"]["base_url"]
+    release = manifest["release"]
+    template = release.get("url_template") or (release["base_url"].rstrip("/") + "/{file}" if release.get("base_url") else None)
     failed = []
     for entry in manifest["files"]:
         if args.inference_only and entry.get("training_only"):
@@ -53,11 +54,11 @@ def main(argv=None):
         elif entry["source"] == "url":
             fetch(entry["url"], target)
             how = "downloaded"
-        elif base:
-            fetch(f"{base.rstrip('/')}/{entry['file']}", target)
+        elif template:
+            fetch(template.format(file=entry["file"]), target)
             how = "downloaded"
         else:
-            print(f"UNAVAILABLE {entry['file']}: the weights release is not published yet; use --from-local")
+            print(f"UNAVAILABLE {entry['file']}: no release location is set in weights_manifest.json; use --from-local")
             failed.append(entry["file"])
             continue
         size = os.path.getsize(target)

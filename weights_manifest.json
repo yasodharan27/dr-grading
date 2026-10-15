@@ -1,8 +1,10 @@
 {
  "terms": "research use only, not a medical device, dataset terms apply; see WEIGHTS_TERMS.md",
  "release": {
-  "base_url": null,
-  "note": "base_url is set when the weights release is published (release assets with an archived copy); until then use `download_weights.py --from-local DIR`. Files are checked by size."
+  "record": "https://zenodo.org/records/23393863",
+  "doi": "10.5281/zenodo.23393863",
+  "url_template": "https://zenodo.org/records/23393863/files/{file}?download=1",
+  "note": "The release files are archived as files of this Zenodo record (the record's files, not a GitHub release asset; the GitHub release links to it). Until the record is published, use `download_weights.py --from-local DIR`. Files are checked by size."
  },
  "files": [
   {

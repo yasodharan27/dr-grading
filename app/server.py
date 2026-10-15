@@ -116,8 +116,9 @@ def cards(image_path, s, reference):
                 "data": {"summary_lines": s["lines"], "review_recommended": s["review_recommended"], "reasons": s["reasons"],
                          "validation_rates": s["validation_rates"], "map_on_lesions": s["map_on_lesions"]}}
     return {"title": f"Why this grade - {s['label']}",
-            "text": "Where the model's expected grade is most sensitive (red = high). This shows sensitivity, not that the model detected lesions.",
-            "images": [img(s["label"], s["overlay"]), img("map", s["map"], "inferno", 200)], "data": {}}
+            "text": ("Where the model's expected grade is most sensitive (red = high). This shows sensitivity, not that the model detected lesions."
+                     + (" Colours are scaled to the 99th percentile of the map for display." if "integrated" in s["label"].lower() else "")),
+            "images": [img(s["label"], s["overlay"]), img("map", s.get("display_map", s["map"]), "inferno", 200)], "data": {}}
 
 
 # --------------------------------------------------------------------------- the server

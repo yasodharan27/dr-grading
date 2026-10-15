@@ -1,4 +1,6 @@
-# Diabetic retinopathy grading pipeline
+# Quality-Aware Explainable Framework for Diabetic Retinopathy Detection
+
+Repository `dr-grading`: a diabetic retinopathy grading pipeline.
 
 Grades diabetic retinopathy (DR) from a colour fundus photograph on the five-level ICDR scale (no DR, mild, moderate,
 severe non-proliferative, proliferative), checks the image quality, segments vessels and lesions, estimates how certain
@@ -33,7 +35,7 @@ Full tables: [`results/tables/TABLES.md`](results/tables/TABLES.md), method: [`d
 | P: APTOS only, ImageNet start | 0.509 | 0.642 |
 | P-EP: APTOS, EyePACS-adapted start | 0.593 | 0.738 |
 | J: joint, whole-image frames | 0.800 | 0.703 |
-| **J-crop: joint, fundus-cropped frames (final model)** | **0.811** | **0.788** |
+| **J-crop: joint, fundus-cropped frames (final model, chosen after the external evaluation)** | **0.811** | **0.788** |
 | J-crop - P | +0.301 (+0.281 to +0.323) | +0.146 (+0.078 to +0.223) |
 | J - P | +0.290 (+0.270 to +0.311) | +0.062 (-0.004 to +0.129) |
 | J-crop - P-EP | +0.218 (+0.199 to +0.236) | +0.050 (-0.005 to +0.109) |
@@ -54,8 +56,8 @@ and J (whole-image frames) is not better than P-EP there (-0.035, interval -0.10
 - **The final model was chosen after the external evaluation.** J-crop was preferred to J once its DDR and IDRiD results
   were known, so those results are **not an unbiased estimate** for a model selected in advance. The development sets
   (APTOS and EyePACS validation) also selected the checkpoints.
-- **DDR and IDRiD were used before.** Both test sets had been used in earlier experiments of this project; no setting of
-  the grader was chosen on them.
+- **DDR and IDRiD were used before.** Both test sets were used in earlier experiments, and those results were known when
+  joint training was chosen; no hyperparameter, threshold or checkpoint was tuned on them.
 - **DDR has no patient identifiers**, and its file-name family is tied to the grade (grades 0 and 4 each occur in one
   family only), so source and grade are confounded.
 - **The IDRiD primary set has 100 images**; its intervals are wide.
@@ -71,7 +73,7 @@ also ran on a Colab runtime with a newer Python.
 ```bash
 python -m venv .venv && . .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt                        # on Linux CPU: see the note at the top of the file
-python scripts/download_weights.py                     # model files into weights/ (see WEIGHTS_TERMS.md)
+python scripts/download_weights.py                     # model files into weights/ (Zenodo record; see WEIGHTS_TERMS.md)
 ```
 
 `config.yaml` is the only file to edit: dataset roots, weights and output folders, device. A `config.local.yaml` beside
@@ -87,7 +89,9 @@ This prints the grade with the written summary and writes a JSON and a figure pe
 four-core CPU one image with Grad-CAM takes a few minutes; Integrated Gradients and Occlusion add several each.
 
 Example output for two of the demo images (IDRiD training set; the second shows a disagreement with the reference
-grade 0: the pipeline gives grade 2 and flags the result for review because a flip or rotation changes a seed's grade):
+grade 0: the pipeline gives grade 2 and flags the result for review because a flip or rotation changes a seed's grade).
+Integrated Gradients overlays are scaled to the 99th percentile of the map for display only; no attribution and no
+localisation number changes:
 
 ![Example, reference grade 3](figures/example_idrid_grade3_IDRiD_001.png)
 

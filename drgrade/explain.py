@@ -79,6 +79,15 @@ def grad_cam(grader, rgb, cut=None):
     return np.asarray(cam, np.float32), np.asarray(logits, np.float64)
 
 
+def display_scale(heat, percentile=99.0):
+    """A map for DISPLAY only: values divided by their `percentile`-th percentile and clipped to [0, 1]. A pixel-level
+    attribution map (Integrated Gradients) is dominated by a few extreme pixels, so scaling by its maximum leaves the
+    picture nearly empty. The map itself, and every number computed from it, is unchanged."""
+    heat = np.asarray(heat, np.float32)
+    top = float(np.percentile(heat, percentile))
+    return np.clip(heat / top, 0.0, 1.0) if top > 0 else np.zeros_like(heat)
+
+
 def overlay(rgb, heat, alpha=0.45):
     """RGB uint8: the frame with the map over it (red = high)."""
     rgb = np.asarray(rgb, np.float32)

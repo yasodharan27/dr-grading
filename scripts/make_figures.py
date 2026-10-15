@@ -42,9 +42,9 @@ def _plt():
 def pipeline_diagram(path):
     plt = _plt()
     from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
-    fig, ax = plt.subplots(figsize=(13, 5.6))
-    ax.set_xlim(0, 13)
-    ax.set_ylim(0, 5.6)
+    fig, ax = plt.subplots(figsize=(13.5, 5.75))
+    ax.set_xlim(0, 13.5)
+    ax.set_ylim(0, 5.75)
     ax.axis("off")
 
     def box(x, y, w, h, title, body, face="#ffffff", edge="#2a78d6"):
@@ -79,7 +79,11 @@ def pipeline_diagram(path):
     arrow((11.9, 1.85), (11.5, 1.45))
     ax.add_patch(FancyArrowPatch((6.55, 1.85), (7.3, 1.45), arrowstyle="-|>", mutation_scale=12, linewidth=1.2, color=INK2, linestyle=":"))
     ax.text(3.6, 0.75, "The grade comes from the RGB grader alone;\nvessel and lesion maps are supporting views.", ha="center", fontsize=8.8, color=INK2, style="italic")
-    ax.text(0.15, 5.4, "Research prototype - not a medical device; the output is not a diagnosis.", fontsize=9, color=INK2)
+    # Stage 1's quality result also feeds the reliability flag: a line over the top to the summary box
+    ax.plot([3.6, 3.6, 13.25, 13.25], [5.25, 5.5, 5.5, 0.75], color=INK2, linewidth=1.2, linestyle=":")
+    arrow((13.25, 0.75), (12.9, 0.75))
+    ax.text(8.0, 5.6, "quality result (Reject raises the reliability flag)", ha="center", fontsize=8.2, color=INK2)
+    ax.text(0.15, 0.12, "Research prototype - not a medical device; the output is not a diagnosis.", fontsize=9, color=INK2)
     fig.savefig(path, dpi=130, bbox_inches="tight")
     plt.close(fig)
 
@@ -97,9 +101,12 @@ def selective_prediction(path):
             sel = r["scores"]["entropy"]["selective"]
             ax.plot([s["coverage"] for s in sel], [s["qwk"] for s in sel], STYLE[arm], color=COLOUR[arm], linewidth=2, marker="o", markersize=5,
                     label=f"{LABEL[arm]}, referred by entropy")
-        rnd = results[f"crop_{name}"]["random_referral"]
-        ax.plot([x["coverage"] for x in rnd], [x["qwk_mean"] for x in rnd], ":", color=COLOUR["random"], linewidth=2, label="random referral (crop)")
-        ax.fill_between([x["coverage"] for x in rnd], [x["qwk_low"] for x in rnd], [x["qwk_high"] for x in rnd], color=COLOUR["random"], alpha=0.2, linewidth=0)
+        for arm in ARMS:                                    # each arm against ITS OWN random-referral baseline
+            rnd = results[f"{arm}_{name}"]["random_referral"]
+            ax.plot([x["coverage"] for x in rnd], [x["qwk_mean"] for x in rnd], ":" if arm == "crop" else "-.", color=COLOUR["random"],
+                    linewidth=2, label=f"random referral ({arm} arm)")
+            ax.fill_between([x["coverage"] for x in rnd], [x["qwk_low"] for x in rnd], [x["qwk_high"] for x in rnd], color=COLOUR["random"],
+                            alpha=0.12, linewidth=0)
         ax.set_title(title, fontsize=10.5)
         ax.set_xlabel("coverage (share of images kept)")
         ax.invert_xaxis()
@@ -108,7 +115,7 @@ def selective_prediction(path):
             ax.spines[side].set_visible(False)
     axes[0].set_ylabel("QWK on the images kept")
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False, fontsize=9.5, bbox_to_anchor=(0.5, -0.08))
+    fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False, fontsize=9, bbox_to_anchor=(0.5, -0.08))
     fig.suptitle("Selective prediction: referring the least certain images raises agreement on the rest "
                  "(validation sets also selected the checkpoints)", fontsize=11, y=1.03)
     fig.savefig(path, dpi=130, bbox_inches="tight")
