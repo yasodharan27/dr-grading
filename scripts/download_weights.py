@@ -5,23 +5,78 @@
     python scripts/download_weights.py --inference-only   # skip the files needed only for training
 
 Files already present with the expected size are kept. A file is checked against its listed size after download.
+A download that times out or drops is retried up to 6 times, resuming from the bytes already on disk (HTTP Range),
+with waits of 5, 10, 20, 40 and 60 seconds.
 """
 import argparse
 import json
 import os
 import shutil
+import socket
 import sys
+import time
+import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from drgrade.config import ROOT, load_config  # noqa: E402
 
 
-def fetch(url, target):
-    tmp = target + ".part"
-    with urllib.request.urlopen(url, timeout=120) as response, open(tmp, "wb") as fh:
-        shutil.copyfileobj(response, fh, length=1 << 20)
-    os.replace(tmp, target)
+ATTEMPTS = 6
+WAITS = (5, 10, 20, 40, 60)                    # seconds before attempts 2 to 6
+TIMEOUT = 120
+CHUNK = 1 << 20
+
+
+class DownloadError(RuntimeError):
+    pass
+
+
+def _open(url, start):
+    headers = {"User-Agent": "drgrade-download"}
+    if start:
+        headers["Range"] = f"bytes={start}-"
+    return urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=TIMEOUT)
+
+
+def fetch(url, target, expected_bytes, attempts=ATTEMPTS, waits=WAITS, sleep=time.sleep, log=print):
+    """Downloads `url` to `target` with resume: after a timeout or a dropped connection the next attempt asks for the
+    bytes still missing (HTTP Range) and appends them to the .part file. A server that ignores Range (answers 200)
+    gets a full download again. The .part file is renamed to `target` only when its size equals `expected_bytes`."""
+    part = target + ".part"
+    last = None
+    for attempt in range(1, attempts + 1):
+        start = os.path.getsize(part) if os.path.exists(part) else 0
+        if start >= expected_bytes:
+            os.replace(part, target)
+            return
+        try:
+            with _open(url, start) as response:
+                status = getattr(response, "status", 200)
+                mode = "ab" if (start and status == 206) else "wb"
+                if start and status != 206:
+                    start = 0
+                with open(part, mode) as fh:
+                    while True:
+                        block = response.read(CHUNK)
+                        if not block:
+                            break
+                        fh.write(block)
+            if os.path.getsize(part) == expected_bytes:
+                os.replace(part, target)
+                return
+            last = f"incomplete transfer: {os.path.getsize(part)} of {expected_bytes} bytes"
+        except (TimeoutError, socket.timeout, urllib.error.URLError, ConnectionError, OSError) as error:
+            last = f"{type(error).__name__}: {error}"
+        bytes_so_far = os.path.getsize(part) if os.path.exists(part) else 0
+        if attempt == attempts:
+            break
+        wait = waits[min(attempt - 1, len(waits) - 1)]
+        log(f"retry       {os.path.basename(target)}: attempt {attempt + 1} of {attempts} in {wait} s "
+            f"({bytes_so_far} of {expected_bytes} bytes so far; {last})")
+        sleep(wait)
+    raise DownloadError(f"{os.path.basename(target)}: giving up after {attempts} attempts ({last}); "
+                        f"the partial file is kept, so running the script again resumes it")
 
 
 def main(argv=None):
@@ -52,10 +107,20 @@ def main(argv=None):
             shutil.copyfile(local, target)
             how = "copied"
         elif entry["source"] == "url":
-            fetch(entry["url"], target)
+            try:
+                fetch(entry["url"], target, entry["bytes"])
+            except DownloadError as error:
+                print(f"FAILED      {entry['file']}: {error}")
+                failed.append(entry["file"])
+                continue
             how = "downloaded"
         elif template:
-            fetch(template.format(file=entry["file"]), target)
+            try:
+                fetch(template.format(file=entry["file"]), target, entry["bytes"])
+            except DownloadError as error:
+                print(f"FAILED      {entry['file']}: {error}")
+                failed.append(entry["file"])
+                continue
             how = "downloaded"
         else:
             print(f"UNAVAILABLE {entry['file']}: no release location is set in weights_manifest.json; use --from-local")
