@@ -1,0 +1,11 @@
+file,source,reference_grade,sha256
+idrid_grade0_IDRiD_118.jpg,"IDRiD disease grading, training set (CC BY 4.0)",0,505330878f4d4186a71b8001570100b82b6b05cb431e81e2c259d8c584314708
+idrid_grade0_IDRiD_138.jpg,"IDRiD disease grading, training set (CC BY 4.0)",0,991a5e34c20e6480a4adc5c0d53f77e3f18770d01863e85e01d5770be27bd4e8
+idrid_grade1_IDRiD_021.jpg,"IDRiD disease grading, training set (CC BY 4.0)",1,7c8af82fac4906b51dbe2d827e050b8b29a18cac21f569d2ac16af1cd65c9baf
+idrid_grade1_IDRiD_079.jpg,"IDRiD disease grading, training set (CC BY 4.0)",1,314e41f14e9d2966eff50a085d02c7acf2a1439702358b5849f3db4657f8381b
+idrid_grade2_IDRiD_003.jpg,"IDRiD disease grading, training set (CC BY 4.0)",2,34bf332d5e7dce3e220ca2ed6191306bfba44d0a111205550a125c42a4f32156
+idrid_grade2_IDRiD_016.jpg,"IDRiD disease grading, training set (CC BY 4.0)",2,b4a8f2eb28d935a66eb10498916df788202615999bda9f09836269d56e5fd893
+idrid_grade3_IDRiD_001.jpg,"IDRiD disease grading, training set (CC BY 4.0)",3,8cbb3482b62a7b4c8a7353a4f25ecf5df80b6f39714f35deb8575c14af78e06d
+idrid_grade3_IDRiD_002.jpg,"IDRiD disease grading, training set (CC BY 4.0)",3,60083dd0e9945c5f54291e262189076daed3b8e08ee381c508ab43932a2d2ef3
+idrid_grade4_IDRiD_005.jpg,"IDRiD disease grading, training set (CC BY 4.0)",4,d09ec72a5fcba65a6594d0cc3a4dc69ab7be19749c2d85ce78bb9dd7a38d86b5
+idrid_grade4_IDRiD_006.jpg,"IDRiD disease grading, training set (CC BY 4.0)",4,d94cade5d968f57ea7e1aba98088e190205dd821fd32f4956db23f12c1a4713d

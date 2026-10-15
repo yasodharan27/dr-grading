@@ -1,30 +1,72 @@
 {
+ "terms": "research use only, not a medical device, dataset terms apply; see WEIGHTS_TERMS.md",
  "release": {
   "base_url": null,
-  "note": "base_url is set when the GitHub release of the weights is published; until then use --from-local"
+  "note": "base_url is set when the weights release is published (release assets with an archived copy); until then use `download_weights.py --from-local DIR`. Files are checked by size."
  },
  "files": [
-  {"file": "grader_crop_seed42.weights.h5", "bytes": 111706200, "source": "release",
-   "model": "grader, fundus-cropped frames (final model), seed 42 (best epoch index 23, 0-based)"},
-  {"file": "grader_crop_seed123.weights.h5", "bytes": 111706200, "source": "release",
-   "model": "grader, fundus-cropped frames (final model), seed 123 (best epoch index 23, 0-based)"},
-  {"file": "grader_crop_seed2026.weights.h5", "bytes": 111706200, "source": "release",
-   "model": "grader, fundus-cropped frames (final model), seed 2026 (best epoch index 24, 0-based)"},
-  {"file": "grader_direct_seed42.weights.h5", "bytes": 111706200, "source": "release",
-   "model": "grader, whole-image frames, seed 42 (best epoch index 19, 0-based)"},
-  {"file": "grader_direct_seed123.weights.h5", "bytes": 111706200, "source": "release",
-   "model": "grader, whole-image frames, seed 123 (best epoch index 18, 0-based)"},
-  {"file": "grader_direct_seed2026.weights.h5", "bytes": 111706200, "source": "release",
-   "model": "grader, whole-image frames, seed 2026 (best epoch index 29, 0-based)"},
-  {"file": "quality_efficientnet_b0_eyeq.keras", "bytes": 85259418, "source": "release",
-   "model": "Stage 1 image quality, EfficientNet-B0 trained on EyeQ (complete Keras model)"},
-  {"file": "lesions_unet_se_resnet101.pt", "bytes": 225875347, "source": "release",
-   "model": "Stage 4 lesion segmentation, U-Net with SE-ResNet-101 encoder (PyTorch state dict; EMA weights, step 6000)"},
-  {"file": "vessels_lwnet_wnet_drive.pth", "bytes": 919662, "source": "url",
+  {
+   "file": "grader_crop_seed42.weights.h5",
+   "bytes": 111706200,
+   "source": "release",
+   "model": "grader, fundus-cropped frames (final model), seed 42 (best epoch index 23, 0-based)"
+  },
+  {
+   "file": "grader_crop_seed123.weights.h5",
+   "bytes": 111706200,
+   "source": "release",
+   "model": "grader, fundus-cropped frames (final model), seed 123 (best epoch index 23, 0-based)"
+  },
+  {
+   "file": "grader_crop_seed2026.weights.h5",
+   "bytes": 111706200,
+   "source": "release",
+   "model": "grader, fundus-cropped frames (final model), seed 2026 (best epoch index 24, 0-based)"
+  },
+  {
+   "file": "grader_direct_seed42.weights.h5",
+   "bytes": 111706200,
+   "source": "release",
+   "model": "grader, whole-image frames, seed 42 (best epoch index 19, 0-based)"
+  },
+  {
+   "file": "grader_direct_seed123.weights.h5",
+   "bytes": 111706200,
+   "source": "release",
+   "model": "grader, whole-image frames, seed 123 (best epoch index 18, 0-based)"
+  },
+  {
+   "file": "grader_direct_seed2026.weights.h5",
+   "bytes": 111706200,
+   "source": "release",
+   "model": "grader, whole-image frames, seed 2026 (best epoch index 29, 0-based)"
+  },
+  {
+   "file": "quality_efficientnet_b0_eyeq.keras",
+   "bytes": 85259418,
+   "source": "release",
+   "model": "Stage 1 image quality, EfficientNet-B0 trained on EyeQ (complete Keras model)"
+  },
+  {
+   "file": "lesions_unet_se_resnet101.pt",
+   "bytes": 225875347,
+   "source": "release",
+   "model": "Stage 4 lesion segmentation, U-Net with SE-ResNet-101 encoder (PyTorch state dict; EMA weights, step 6000)"
+  },
+  {
+   "file": "vessels_lwnet_wnet_drive.pth",
+   "bytes": 919662,
+   "source": "url",
    "url": "https://raw.githubusercontent.com/agaldran/lwnet/ce72ddabcf5fc9af14197ac0d43bd29000b17df2/experiments/wnet_drive/model_checkpoint.pth",
-   "model": "Stage 3 vessel segmentation, LWNet W-Net trained on DRIVE by its authors (Galdran et al.; MIT License), downloaded from their repository"},
-  {"file": "convnext_tiny_imagenet_notop.h5", "bytes": 111650432, "source": "url", "training_only": true,
+   "model": "Stage 3 vessel segmentation, LWNet W-Net trained on DRIVE by its authors (Galdran et al.; MIT License), downloaded from their repository"
+  },
+  {
+   "file": "convnext_tiny_imagenet_notop.h5",
+   "bytes": 111650432,
+   "source": "url",
+   "training_only": true,
    "url": "https://storage.googleapis.com/tensorflow/keras-applications/convnext/convnext_tiny_notop.h5",
-   "model": "ImageNet-1k ConvNeXt-Tiny (Keras applications), the grader's initialisation; needed for training only"}
+   "model": "ImageNet-1k ConvNeXt-Tiny (Keras applications), the grader's initialisation; needed for training only"
+  }
  ]
 }

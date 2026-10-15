@@ -1,0 +1,7 @@
+arm,method,images,pointing_hit,top10_precision,auroc,uniform_map_baseline
+crop,grad_cam,60,0.067,0.024,0.818,0.008
+crop,integrated_gradients,60,0.4,0.039,0.938,0.008
+crop,occlusion,20,0.05,0.015,0.815,0.003
+direct,grad_cam,60,0.017,0.023,0.841,0.005
+direct,integrated_gradients,60,0.5,0.031,0.957,0.005
+direct,occlusion,20,0.0,0.011,0.865,0.002

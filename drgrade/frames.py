@@ -90,15 +90,15 @@ class FrameCache:
     """Read access: `entries(split)` in build order, `frame(image)` as float32 (512, 512, 3) in [0, 1], and the
     arm the cache was built for. Refuses a folder without an index (an unfinished build).
 
-    The index may come from `build` (it names its arm) or from an earlier build with the same shard layout, which
-    states the crop rule in its `version` text instead; pass `arm` for any other index."""
+    The index written by `build` names its arm. A cache of the same shard layout made elsewhere may not: pass
+    `arm` ('crop' or 'direct') to state which frames it holds."""
 
     def __init__(self, directory, arm=None):
         path = os.path.join(directory, "index.json")
         if not os.path.exists(path):
             raise FrameCacheError(f"{directory} has no index.json: run scripts/prepare_frames.py first")
         index = read_json(path)
-        found = index.get("arm") or ("crop" if str(index.get("version", "")).startswith("crop-frames") else None)
+        found = index.get("arm")
         if arm and found and arm != found:
             raise FrameCacheError(f"{directory} holds {found} frames, not {arm}")
         if not (arm or found):

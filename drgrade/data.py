@@ -91,3 +91,26 @@ def tjdr_mask_path(cfg, official_split, image_id):
 def read_csv_rows(path):
     with open(path, newline="", encoding="utf-8") as fh:
         return list(csv.DictReader(fh))
+
+
+# --------------------------------------------------------------------------- DDR lesion segmentation (localisation check)
+
+def ddr_lesion_sample(splits_dir=None):
+    """The 60 DDR lesion-segmentation TRAINING images of the localisation check (names in the order they are
+    processed) and whether the Occlusion method also runs on each (the first 20)."""
+    t = _csv("ddr_lesion_localisation_sample.csv", splits_dir, dtype={"image": str})
+    return [(r.image, bool(r.occlusion)) for r in t.itertuples()]
+
+
+def ddr_lesion_paths(cfg, name):
+    """(image path, {class: mask path}) of one DDR lesion-segmentation training image. Two folder layouts are
+    understood, both under <ddr>/lesion_segmentation: train/image + train/label/<class> (as distributed) and
+    images/train + annotations/train/<class>."""
+    root = os.path.join(cfg["datasets"]["ddr"], "lesion_segmentation")
+    stem = os.path.splitext(name)[0]
+    layouts = [(os.path.join(root, "train", "image", name), lambda c: os.path.join(root, "train", "label", c, stem + ".tif")),
+               (os.path.join(root, "images", "train", name), lambda c: os.path.join(root, "annotations", "train", c, stem + ".tif"))]
+    for image, mask in layouts:
+        if os.path.exists(image):
+            return image, {c: mask(c) for c in LESION_CLASSES}
+    raise FileNotFoundError(f"{name} not found under {root} (looked in train/image and images/train)")

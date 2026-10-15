@@ -3,7 +3,7 @@ quality probabilities, Stage-2 frames, the Stage-3 vessel map, the Stage-4 maps,
 grades (both arms, three seeds) and, optionally, the Grad-CAM maps.
 
     python scripts/parity_check.py --images DIR --reference FILE.npz            # compare
-    python scripts/parity_check.py --images DIR --write FILE.npz [--gradcam]    # write a reference with this code
+    python scripts/parity_check.py --images DIR --write FILE.npz [--gradcam] [--compact]   # write a reference with this code
 
 The reference holds, for the images of DIR in sorted order: names, quality (N, 3), box (N, 4), frame_direct and
 frame_crop (N, 512, 512, 3), vessel (N, 512, 512), lesion_maps (N, 512, 512, 8) uint8, logits_<arm>_<seed> (N, 4)
@@ -59,7 +59,8 @@ def compute(cfg, paths, with_gradcam=False, log=print):
 
 
 def compare(new, ref):
-    """Rows of (quantity, max abs difference, tolerance, pass) and the overall verdict."""
+    """Rows of (quantity, max abs difference, tolerance, pass) and the overall verdict. Only the quantities the
+    reference holds are compared (a compact reference has no frames or maps)."""
     if list(new["names"]) != list(ref["names"]):
         raise ValueError("the images differ from the reference's")
     rows = []
@@ -68,14 +69,19 @@ def compare(new, ref):
         diff = float(np.max(np.abs(np.asarray(a, np.float64) - np.asarray(b, np.float64)))) if np.size(a) else 0.0
         rows.append((name, diff, tol, diff <= tol))
 
-    add("quality probabilities", new["quality"], ref["quality"], TOLERANCE["quality"])
-    rows.append(("quality labels identical", 0.0, 0, bool(np.array_equal(new["quality"].argmax(1), ref["quality"].argmax(1)))))
-    rows.append(("fundus boxes identical", 0.0, 0, bool(np.array_equal(new["box"], ref["box"]))))
+    if "quality" in ref:
+        add("quality probabilities", new["quality"], ref["quality"], TOLERANCE["quality"])
+        rows.append(("quality labels identical", 0.0, 0, bool(np.array_equal(new["quality"].argmax(1), ref["quality"].argmax(1)))))
+    if "box" in ref:
+        rows.append(("fundus boxes identical", 0.0, 0, bool(np.array_equal(new["box"], ref["box"]))))
     for key in ("frame_direct", "frame_crop", "vessel", "lesion_maps"):
-        add(key, new[key], ref[key], TOLERANCE[key])
+        if key in ref:
+            add(key, new[key], ref[key], TOLERANCE[key])
     for arm in ARMS:
         for seed in SEEDS:
             key = f"logits_{arm}_{seed}"
+            if key not in ref:
+                continue
             add(key, new[key], ref[key], TOLERANCE["logits"])
             same = np.array_equal(gr.decode(new[key])["grade"], gr.decode(ref[key])["grade"])
             rows.append((f"grades_{arm}_{seed} identical", 0.0, 0, bool(same)))
@@ -93,6 +99,8 @@ def main(argv=None):
     group.add_argument("--write")
     parser.add_argument("--gradcam", action="store_true", help="also compute (and compare) the Grad-CAM maps")
     parser.add_argument("--save-new", help="also save this run's outputs to this .npz")
+    parser.add_argument("--compact", action="store_true",
+                        help="with --write: keep only image names, quality probabilities, fundus boxes and grader logits (a small file)")
     parser.add_argument("--tolerance", action="append", default=[], metavar="KEY=VALUE",
                         help=f"override a tolerance, e.g. logits=1e-4 (keys: {', '.join(TOLERANCE)}); for another platform's reference")
     args = parser.parse_args(argv)
@@ -118,7 +126,10 @@ def main(argv=None):
             print(f"{name:<{width}}  {diff:12.3e}  {tol:9.0e}  {'PASS' if passed else 'FAIL'}")
         print(f"PARITY {'PASS' if ok else 'FAIL'} on {len(paths)} images")
         sys.exit(0 if ok else 1)
-    np.savez_compressed(args.write, **compute(cfg, paths, args.gradcam))
+    out = compute(cfg, paths, args.gradcam)
+    if args.compact:
+        out = {k: v for k, v in out.items() if k in ("names", "quality", "box") or k.startswith("logits_")}
+    np.savez_compressed(args.write, **out)
     print(f"reference written to {args.write}")
 
 

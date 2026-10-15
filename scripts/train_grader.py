@@ -41,8 +41,8 @@ def main(argv=None):
     parser.add_argument("--workers", type=int, default=2)
     args = parser.parse_args(argv)
     cfg = load_config(args.config)
-    aptos_cache = frames.FrameCache(args.aptos_frames or frames.cache_dir(cfg, "aptos", args.frame))
-    eyepacs_cache = frames.FrameCache(args.eyepacs_frames or frames.cache_dir(cfg, "eyepacs", args.frame))
+    aptos_cache = frames.FrameCache(args.aptos_frames or frames.cache_dir(cfg, "aptos", args.frame), args.frame)
+    eyepacs_cache = frames.FrameCache(args.eyepacs_frames or frames.cache_dir(cfg, "eyepacs", args.frame), args.frame)
     for cache in (aptos_cache, eyepacs_cache):
         if cache.arm != args.frame:
             sys.exit(f"{cache.directory} holds {cache.arm} frames, not {args.frame}")

@@ -55,17 +55,42 @@ APTOS, 3,512 EyePACS images) are scored and the mean of the two QWKs is monitore
 4 epochs without improvement (down to 1e-6), training stops after 12, at most 50 epochs; the best epoch is kept.
 `--frame crop` cuts every image to its fundus box before the resize, `--frame direct` resizes the whole image.
 
-A frame cache that already exists with this shard layout (`frames_<split>_<nnn>.npy` and an `index.json`, float16, 512 x 512)
-can be used as it is: pass its folder as `--eyepacs-frames` (copy it to local disk first; reading 50 GB through a
-mounted drive is slow). `prepare_frames.py --from-cache DIR --limit N --limit-val M --out OUT` copies the first N
-training and M validation frames of such a cache into a small one.
+Frames built from raw images were verified against an independently built cache only on a few images, locally: 12
+APTOS and 28 EyePACS crop frames came out bit-identical (float16). A full build of the 35,122 EyePACS frames was not run
+during development of this repository.
+
+Optional: a frame cache of the same shard layout made by other means (`frames_<split>_<nnn>.npy` shards of float16
+(n, 512, 512, 3) frames and an `index.json` listing, per shard, `split`, `images`, `grades` and `bytes`) can be used
+instead of building frames: pass its folder as `--aptos-frames` / `--eyepacs-frames` (the index need not name its arm;
+`--frame` states it). Copy it to local disk first, since reading 50 GB through a mounted drive is slow.
+`prepare_frames.py --from-cache DIR --arm crop --limit N --limit-val M --out OUT` copies the first N training and M
+validation frames of such a cache into a small one (this is how the GPU smoke test can run without raw EyePACS images).
 
 Disk for the frames of ONE arm (float16, 1.5 MB per frame): APTOS 3,651 frames 5.5 GB, EyePACS 35,122 frames 53 GB. A
 Colab T4 runtime has about 71 GB free, so build and train one arm at a time and delete the other arm's frames.
 
+## How long it takes
+
+Measured on a Colab T4 during the original runs (batch 16, mixed precision; end-to-end per epoch, including both
+validation passes, checkpointing and start-up of each session):
+
+| | epochs before early stopping | per epoch | per seed |
+|---|---|---|---|
+| whole-image frames (`direct`), seed 123 | 31 | about 11.5 min | about 5.9 h |
+| fundus-cropped frames (`crop`), seed 123 | 36 | about 10.3 min | about 6.2 h |
+
+That is about 6 hours per seed when uninterrupted, so about 18 hours for the three seeds of one arm and about 36 hours
+for both arms, plus interruptions (the original runs were spread over one to two days per arm). The data loading of one batch (0.23 s) is far below the optimiser step (0.60 s per step of 16
+images, 26.6 images per second), so a T4 is the limit. Stage 4 was sized for about 3 T4-hours (12,000 iterations); no
+measured duration of that run is available. Stage 1 took about 25 minutes for five small epochs in the GPU smoke test,
+dominated by reading images through a mounted drive; copy the data to local disk first.
+
 ## Smoke test on a GPU
 
 `python scripts/smoke_gpu.py` trains every trainer for a few hundred steps on small subsets of the real datasets
-(two invocations each, to exercise resume) and checks that losses are finite and fall and that checkpoints exist. The
-epoch logs of the grader and Stage-1 trainers print the host RAM of the process: it should stay flat from epoch to
-epoch.
+(two invocations each, to exercise resume) and checks that losses are finite and fall and that checkpoints exist.
+On a Colab T4 all checks passed: Stage 1, Stage 4 and the grader each ran, resumed from their checkpoint after the
+first invocation and had finite, falling training losses (Stage 4's three validation scores sat at chance level,
+as expected after 300 steps of an averaged-weights model). The epoch logs of the grader and Stage-1 trainers print the
+host RAM of the process, which should stay flat from epoch to epoch; **whether it does was not verified** (the epoch
+lines of that run were not kept).

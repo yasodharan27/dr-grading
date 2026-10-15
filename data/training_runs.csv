@@ -1,0 +1,7 @@
+arm,seed,best_epoch_index_0based,epochs_run,stop,aptos_val_qwk,eyepacs_val_qwk,selection
+crop,42,23,36,early_stopping,0.919413,0.827778,0.873596
+crop,123,23,36,early_stopping,0.91075,0.827469,0.869109
+crop,2026,24,37,early_stopping,0.918512,0.825592,0.872052
+direct,42,19,32,early_stopping,0.909961,0.816392,0.863176
+direct,123,18,31,early_stopping,0.916429,0.815638,0.866034
+direct,2026,29,42,early_stopping,0.912159,0.819248,0.865703

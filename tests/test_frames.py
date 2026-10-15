@@ -21,15 +21,13 @@ def _write_cache(directory, index_extra, n=3):
     return block
 
 
-def test_cache_names_its_arm_or_is_refused(tmp_path):
+def test_cache_names_its_arm_or_is_told_it(tmp_path):
     _write_cache(tmp_path / "named", {"arm": "direct"})
     assert frames.FrameCache(str(tmp_path / "named")).arm == "direct"
-    _write_cache(tmp_path / "older", {"version": "crop-frames-v1: Stage 2 -> fundus box cut -> resize -> float16"})
-    assert frames.FrameCache(str(tmp_path / "older")).arm == "crop"                 # the layout of an earlier build
-    _write_cache(tmp_path / "unnamed", {})
+    _write_cache(tmp_path / "unnamed", {})                                           # a cache of this layout made elsewhere
     with pytest.raises(frames.FrameCacheError):
         frames.FrameCache(str(tmp_path / "unnamed"))
-    assert frames.FrameCache(str(tmp_path / "unnamed"), arm="direct").arm == "direct"
+    assert frames.FrameCache(str(tmp_path / "unnamed"), arm="crop").arm == "crop"
     with pytest.raises(frames.FrameCacheError):
         frames.FrameCache(str(tmp_path / "named"), arm="crop")                      # contradicts the index
 

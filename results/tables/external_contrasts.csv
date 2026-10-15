@@ -1,0 +1,21 @@
+dataset,population,n,contrast,role,qwk_difference_mean,ci_low,ci_high,diff_seed42,diff_seed123,diff_seed2026,seeds_positive,reading
+ddr,primary_3540,3540,direct_minus_p,main,0.290322,0.269952,0.311285,0.279804,0.280587,0.310575,3,supported: the interval lies wholly above zero
+ddr,primary_3540,3540,crop_minus_p,main,0.301325,0.280655,0.322634,0.291770,0.273845,0.338359,3,supported: the interval lies wholly above zero
+ddr,primary_3540,3540,direct_minus_p_ep,descriptive,0.206685,0.188656,0.225517,0.158703,0.264275,0.197077,3,supported: the interval lies wholly above zero
+ddr,primary_3540,3540,crop_minus_p_ep,descriptive,0.217688,0.199264,0.236196,0.170669,0.257533,0.224861,3,supported: the interval lies wholly above zero
+ddr,primary_3540,3540,crop_minus_direct,descriptive,0.011003,0.002597,0.019480,0.011966,-0.006741,0.027783,2,supported: the interval lies wholly above zero
+ddr,broader_3725,3725,direct_minus_p,main,0.296447,0.276113,0.316661,0.285461,0.281981,0.321897,3,supported: the interval lies wholly above zero
+ddr,broader_3725,3725,crop_minus_p,main,0.308174,0.288337,0.328809,0.298495,0.278213,0.347816,3,supported: the interval lies wholly above zero
+ddr,broader_3725,3725,direct_minus_p_ep,descriptive,0.206974,0.189736,0.224257,0.159693,0.262435,0.198793,3,supported: the interval lies wholly above zero
+ddr,broader_3725,3725,crop_minus_p_ep,descriptive,0.218702,0.201583,0.235884,0.172727,0.258666,0.224711,3,supported: the interval lies wholly above zero
+ddr,broader_3725,3725,crop_minus_direct,descriptive,0.011728,0.003742,0.019820,0.013034,-0.003769,0.025918,2,supported: the interval lies wholly above zero
+idrid,primary_100,100,direct_minus_p,main,0.061702,-0.003959,0.129298,0.127003,0.033326,0.024777,3,no difference shown: the interval includes zero (no equivalence or non-inferiority statement)
+idrid,primary_100,100,crop_minus_p,main,0.146143,0.078030,0.222947,0.248284,0.093136,0.097008,3,supported: the interval lies wholly above zero
+idrid,primary_100,100,direct_minus_p_ep,descriptive,-0.034751,-0.103311,0.031428,-0.118185,0.036839,-0.022907,1,no difference shown: the interval includes zero (no equivalence or non-inferiority statement)
+idrid,primary_100,100,crop_minus_p_ep,descriptive,0.049690,-0.005096,0.109144,0.003096,0.096649,0.049325,3,no difference shown: the interval includes zero (no equivalence or non-inferiority statement)
+idrid,primary_100,100,crop_minus_direct,descriptive,0.084441,0.037320,0.140905,0.121281,0.059810,0.072231,3,supported: the interval lies wholly above zero
+idrid,all_103,103,direct_minus_p,main,0.064635,0.000470,0.133395,0.129876,0.034239,0.029789,3,supported: the interval lies wholly above zero
+idrid,all_103,103,crop_minus_p,main,0.147045,0.077153,0.222405,0.245736,0.093886,0.101512,3,supported: the interval lies wholly above zero
+idrid,all_103,103,direct_minus_p_ep,descriptive,-0.035127,-0.105597,0.034498,-0.117824,0.035727,-0.023285,1,no difference shown: the interval includes zero (no equivalence or non-inferiority statement)
+idrid,all_103,103,crop_minus_p_ep,descriptive,0.047283,-0.010523,0.103634,-0.001965,0.095374,0.048439,2,no difference shown: the interval includes zero (no equivalence or non-inferiority statement)
+idrid,all_103,103,crop_minus_direct,descriptive,0.082410,0.034254,0.137702,0.115859,0.059647,0.071724,3,supported: the interval lies wholly above zero

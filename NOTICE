@@ -1,0 +1,19 @@
+Diabetic retinopathy grading pipeline
+Copyright 2026 the authors listed in CITATION.cff
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party material
+
+  LWNet (retinal vessel segmentation, Stage 3)
+    Architecture and inference procedure ported from https://github.com/agaldran/lwnet
+    Copyright (c) 2020 Adrian Galdran, MIT License (see LICENSES/LWNet-MIT.txt).
+    The released vessel checkpoint is the authors' own, downloaded from their repository.
+
+  Demo images (data/demo_images/)
+    Ten images of the IDRiD disease-grading training set, Creative Commons Attribution 4.0
+    (CC BY 4.0). P. Porwal et al., "IDRiD: Diabetic retinopathy - segmentation and grading
+    challenge", Medical Image Analysis 59 (2020), doi:10.1016/j.media.2019.101561.
+    The images are unmodified copies.
+
+Model weights are distributed separately and are not covered by the Apache License: see WEIGHTS_TERMS.md.

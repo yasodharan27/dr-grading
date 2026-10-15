@@ -3,7 +3,8 @@ the two validation sets, APTOS 2019 validation (730 images) and EyePACS validati
 
     python scripts/make_reliability_calibration.py
 
-Inputs: results/validation_ensemble/<arm>_{aptos,eyepacs}_val.csv (image_id, true_grade, ensemble_grade, entropy).
+Inputs: results/uncertainty/uncertainty_<arm>_{aptos,eyepacs}_val.csv (made by scripts/run_uncertainty.py; the columns
+image_id, true_grade, ensemble_grade and entropy are used).
 These validation sets also selected the checkpoints, so the rates are optimistic for new images.
 """
 import argparse
@@ -15,14 +16,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from drgrade.config import ARMS, ROOT  # noqa: E402
 from drgrade.uncertainty import reliability_calibration  # noqa: E402
 
-TABLES = os.path.join(ROOT, "results", "validation_ensemble")
+TABLES = os.path.join(ROOT, "results", "uncertainty")
 SOURCE = "three-seed ensemble on the APTOS 2019 validation split (730) and the EyePACS validation split (3,512), pooled"
 NOTE = "these validation sets also selected the checkpoints, so the rates are optimistic for new images"
 
 
 def build(tables_dir=TABLES):
     return {"source": SOURCE, "note": NOTE,
-            "arms": {arm: reliability_calibration([os.path.join(tables_dir, f"{arm}_{s}_val.csv") for s in ("aptos", "eyepacs")])
+            "arms": {arm: reliability_calibration([os.path.join(tables_dir, f"uncertainty_{arm}_{s}_val.csv") for s in ("aptos", "eyepacs")])
                      for arm in ARMS}}
 
 
