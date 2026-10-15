@@ -26,3 +26,6 @@ datasets:
 
 # Demo images shown in the web app's "known grade" list (labels.csv: file, source, reference_grade).
 demo_images: data/demo_images
+
+# Validation rates behind the demo's reliability wording (rebuilt by scripts/make_reliability_calibration.py).
+reliability_calibration: data/reliability_calibration.json

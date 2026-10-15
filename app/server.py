@@ -111,6 +111,10 @@ def cards(image_path, s, reference):
                         f"expected grade varies by SD {s['tta_expected_grade_sd']:.2f}"
                         f"{' and the decoded grade CHANGES for at least one seed' if s['tta_grade_changes'] else '; the decoded grade does not change'}.",
                 "images": [], "data": {k: s[k] for k in ("entropy", "seed_disagreement", "tta_expected_grade_sd", "tta_grade_changes")}}
+    if kind == "summary":
+        return {"title": "Summary - written explanation and reliability", "text": "", "images": [],
+                "data": {"summary_lines": s["lines"], "review_recommended": s["review_recommended"], "reasons": s["reasons"],
+                         "validation_rates": s["validation_rates"], "map_on_lesions": s["map_on_lesions"]}}
     return {"title": f"Why this grade - {s['label']}",
             "text": "Where the model's expected grade is most sensitive (red = high). This shows sensitivity, not that the model detected lesions.",
             "images": [img(s["label"], s["overlay"]), img("map", s["map"], "inferno", 200)], "data": {}}

@@ -25,7 +25,7 @@ def default_config_path():
 
 #: Environment variables that override config.yaml (useful in containers: no rebuild to change a path).
 ENV_OVERRIDES = {"DRGRADE_WEIGHTS_DIR": "weights_dir", "DRGRADE_OUTPUT_DIR": "output_dir", "DRGRADE_DEMO_IMAGES": "demo_images",
-                 "DRGRADE_DEVICE": "device", "DRGRADE_ARM": "arm"}
+                 "DRGRADE_DEVICE": "device", "DRGRADE_ARM": "arm", "DRGRADE_RELIABILITY": "reliability_calibration"}
 
 
 def load_config(path=None):
@@ -42,7 +42,8 @@ def load_config(path=None):
     for variable, key in ENV_OVERRIDES.items():
         if os.environ.get(variable):
             cfg[key] = os.environ[variable]
-    for key in ("weights_dir", "output_dir", "demo_images"):
+    cfg.setdefault("reliability_calibration", "data/reliability_calibration.json")
+    for key in ("weights_dir", "output_dir", "demo_images", "reliability_calibration"):
         cfg[key] = resolve(cfg.get(key))
     cfg["datasets"] = {k: resolve(v) for k, v in (cfg.get("datasets") or {}).items()}
     cfg.setdefault("device", "cpu")

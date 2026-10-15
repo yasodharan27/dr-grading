@@ -40,6 +40,8 @@ class FakeEngine:
         for name in explanations:
             yield {"stage": "explanation", "method": name, "label": name, "seconds": 0.1, "map": np.zeros((32, 32)),
                    "overlay": np.zeros((32, 32, 3), np.uint8)}
+        yield {"stage": "summary", "seconds": 0.0, "lines": ["**Grade 2 - Moderate NPDR** <script>x</script>"], "review_recommended": True,
+               "reasons": ["r"], "validation_rates": {"exact": 0.6, "within_one": 0.9, "images": 3}, "map_on_lesions": {"Grad-CAM": (0.1, 0.01)}}
 
 
 @pytest.fixture()
@@ -75,8 +77,9 @@ def test_upload_runs_every_stage_and_the_upload_is_deleted(running):
     result = _wait(url, job["id"])
     assert result["error"] is None
     titles = [s["title"] for s in result["stages"]]
-    assert len(titles) == 8 and titles[-1] == "Done" and any("Grad-CAM" in t or "grad_cam" in t for t in titles)
+    assert len(titles) == 9 and titles[-1] == "Done" and titles[-2].startswith("Summary") and any("Grad-CAM" in t or "grad_cam" in t for t in titles)
     assert result["stages"][4]["data"]["grade"] == 2
+    assert result["stages"][-2]["data"]["summary_lines"][0].startswith("**Grade 2") and result["stages"][-2]["data"]["review_recommended"]
     assert engine.paths and not os.path.exists(engine.paths[0])          # the uploaded file is gone
 
 

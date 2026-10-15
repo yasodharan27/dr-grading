@@ -202,6 +202,15 @@ def localisation(heat, lesion_mask, top_fraction=0.1):
             "auroc": mt.auroc(mask.reshape(-1), heat.reshape(-1)), "lesion_fraction": float(mask.mean())}
 
 
+def map_on_lesions(heat, lesion_mask, top_fraction=0.1):
+    """(share of the map's top `top_fraction` pixels that lie on the mask, the mask's share of the frame -- what a map
+    unrelated to the lesions would give)."""
+    heat, mask = np.asarray(heat, np.float64), np.asarray(lesion_mask, bool)
+    k = max(1, int(round(top_fraction * heat.size)))
+    top = np.argsort(heat, axis=None, kind="stable")[-k:]
+    return float(mask.reshape(-1)[top].mean()), float(mask.mean())
+
+
 def frame_mask(mask_native, box=None, size=512):
     """An expert mask in the grader's frame: the same cut (crop arm) and resize as the image (nearest neighbour)."""
     import cv2

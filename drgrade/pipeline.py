@@ -17,7 +17,7 @@ import time
 
 import numpy as np
 
-from . import explain, lesions, preprocess, quality, uncertainty, vessels
+from . import explain, lesions, preprocess, quality, summary, uncertainty, vessels
 from . import grader as gr
 from .config import GRADES, SEEDS, configure_threads, load_config, weight_path
 
@@ -40,6 +40,7 @@ class Pipeline:
         log("loading Stage 3 (LWNet) and Stage 4 (lesion U-Net) ...")
         self.vessels = vessels.load_model(weight_path(cfg, "vessels"), self.device)
         self.lesions = lesions.load_model(weight_path(cfg, "lesions"), self.device)
+        self.calibration = summary.load_calibration(cfg["reliability_calibration"])
         self.arm, self.graders = None, {}
         self.load_arm(arm or cfg["arm"], log)
 
@@ -89,13 +90,23 @@ class Pipeline:
                "expected_grade": float(e["p_gt"][0].sum()), "logits": logits[:, 0]}
 
         t = time.time()
-        tta = [uncertainty.tta_summary(uncertainty.tta_logits(fn, frame[None])) for fn in fns]
+        tta_summaries = [uncertainty.tta_summary(uncertainty.tta_logits(fn, frame[None])) for fn in fns]
         seeds_pred = e["seed_pred"][:, 0].tolist()
-        yield {"stage": "uncertainty", "seconds": time.time() - t, "entropy": float(e["entropy"][0]),
+        entropy = float(e["entropy"][0])
+        tta_change = bool(any(x["grade_changes"][0] for x in tta_summaries))
+        yield {"stage": "uncertainty", "seconds": time.time() - t, "entropy": entropy,
                "seed_disagreement": float(e["seed_disagreement"][0]), "seeds_agree": len(set(seeds_pred)) == 1,
-               "tta_expected_grade_sd": float(np.mean([x["expected_grade_sd"][0] for x in tta])),
-               "tta_grade_changes": bool(any(x["grade_changes"][0] for x in tta))}
+               "tta_expected_grade_sd": float(np.mean([x["expected_grade_sd"][0] for x in tta_summaries])),
+               "tta_grade_changes": tta_change}
 
+        # Stage-4 lesions (any class above 0.5) in the grader's frame: the whole-image maps are brought back to the
+        # native size, then given the same cut and resize as the image
+        import cv2
+        native_h, native_w = f["stage2"].shape[:2]
+        lesions_native = cv2.resize((lesion_max > 0.5).any(axis=-1).astype(np.uint8), (native_w, native_h),
+                                    interpolation=cv2.INTER_NEAREST)
+        lesions_frame = explain.frame_mask(lesions_native, None if arm == "direct" else f["box"])
+        overlaps = {}
         for name in explanations:
             t = time.time()
             if name == "grad_cam":
@@ -109,8 +120,16 @@ class Pipeline:
                 label = f"Occlusion, seed {SEEDS[0]}, 64-pixel patches, stride {settings['occlusion_stride']}"
             else:
                 raise ValueError(f"unknown explanation {name!r}; choose from {EXPLANATIONS}")
+            overlaps[summary.METHOD_NAMES[name]] = explain.map_on_lesions(heat, lesions_frame)
             yield {"stage": "explanation", "method": name, "label": label, "seconds": time.time() - t, "map": heat,
                    "overlay": explain.overlay(frame, heat)}
+
+        t = time.time()
+        review, reasons, rates = summary.reliability(q["label"], seeds_pred, tta_change, entropy, self.calibration["arms"][arm])
+        lines = summary.written_summary(grade, [float(p) for p in e["class_prob"][0]], area, overlaps, review, reasons, rates,
+                                        self.calibration["note"])
+        yield {"stage": "summary", "seconds": time.time() - t, "lines": lines, "review_recommended": review, "reasons": reasons,
+               "validation_rates": rates, "map_on_lesions": overlaps}
 
     def run(self, image_path, arm=None, explanations=("grad_cam",), settings=None):
         """(result: JSON-ready summary, views: the arrays for figures) of one image."""
@@ -134,9 +153,11 @@ class Pipeline:
             elif kind == "uncertainty":
                 result["uncertainty"] = {k: s[k] for k in ("entropy", "seed_disagreement", "seeds_agree", "tta_expected_grade_sd",
                                                            "tta_grade_changes")}
-            else:
+            elif kind == "explanation":
                 result["explanations"][s["method"]] = s["label"]
                 views["explanations"][s["method"]] = s["overlay"]
+            else:
+                result["summary"] = {k: s[k] for k in ("lines", "review_recommended", "reasons", "validation_rates", "map_on_lesions")}
         return result, views
 
 
@@ -186,6 +207,8 @@ def main(argv=None):
         figure(result, views, os.path.join(out, f"{stem}.png"))
         print(f"{result['image']}: grade {result['grade']} ({result['grade_name']}), quality {result['quality']['label']}, "
               f"seeds {list(result['per_seed'].values())}, entropy {result['uncertainty']['entropy']:.2f}")
+        for line in result["summary"]["lines"]:
+            print("   " + line.replace("**", ""))
     print(f"written to {out}")
 
 

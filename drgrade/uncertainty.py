@@ -104,6 +104,28 @@ def run(sets, out_dir):
     return results
 
 
+# --------------------------------------------------------------------------- reliability wording of the demo
+
+RELIABILITY_COVERAGE = 0.8          # the 20 % least certain validation images define "uncertain"
+
+
+def reliability_calibration(tables, coverage=RELIABILITY_COVERAGE):
+    """From per-image ensemble tables of VALIDATION sets (columns true_grade, ensemble_grade, entropy), pooled: the
+    entropy below which the `coverage` most certain images fall, and how often the ensemble grade was exact / within
+    one grade on each side of it. Used only to word the demo's reliability statement; the validation sets also
+    selected the checkpoints, so the rates are optimistic for new images."""
+    import pandas as pd
+    t = pd.concat([pd.read_csv(p, dtype={"image_id": str}) for p in tables], ignore_index=True)
+    threshold = float(np.quantile(t["entropy"], coverage))
+
+    def rates(part):
+        diff = (part["ensemble_grade"] - part["true_grade"]).abs()
+        return {"images": int(len(part)), "exact": float((diff == 0).mean()), "within_one": float((diff <= 1).mean())}
+
+    return {"coverage": coverage, "entropy_threshold": threshold, "images": int(len(t)),
+            "certain": rates(t[t["entropy"] <= threshold]), "uncertain": rates(t[t["entropy"] > threshold])}
+
+
 # --------------------------------------------------------------------------- test-time augmentation
 
 def dihedral(rgb, k):
