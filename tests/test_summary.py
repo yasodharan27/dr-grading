@@ -32,7 +32,8 @@ def test_the_written_summary_states_only_what_the_outputs_say():
                                     {"Grad-CAM": (0.35, 0.02)}, False, [], rates, "optimistic")
     text = " ".join(lines)
     assert "Grade 2 - Moderate NPDR" in text and "76 %" in text
-    assert text.index("hard exudates") < text.index("haemorrhages")              # largest area first
+    assert text.index("Stage 4 marks hard exudates") < text.index("haemorrhages (0")   # largest area first (the Stage-4 sentence)
+    assert "signs beyond the first microaneurysms" in text
     assert "microaneurysms (" not in text                                      # not found -> not listed
     assert "35 % of its most influential area" in text
     assert "No reliability flag" in text and "exact in 92 %" in text
@@ -41,6 +42,9 @@ def test_the_written_summary_states_only_what_the_outputs_say():
                                     ["the three models give different grades [3, 2, 3]"], rates, "x")
     text = " ".join(lines)
     assert "Stage 4 marks no lesions" in text and "worth a closer look" in text and "Review recommended" in text
+    assert "Its certainty band alone (not the flags above): on validation images in this band" in text      # flagged image
+    assert "On validation images in this certainty band" not in text
+    assert "Its certainty band alone" not in " ".join(summary.written_summary(2, [0.0, 0.0, 0.76, 0.0, 0.24], {}, {}, False, [], rates, "x"))
 
 
 def test_the_reliability_calibration_file_matches_the_validation_tables_it_came_from():
