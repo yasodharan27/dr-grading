@@ -2,28 +2,42 @@ cff-version: 1.2.0
 message: "If you use this software or the released models, please cite it as below."
 type: software
 title: "Quality-Aware Explainable Framework for Diabetic Retinopathy Detection"
-version: 1.0.0
+version: 1.0.1
+date-released: 2026-10-21
 license: Apache-2.0
 repository-code: "https://github.com/yasodharan27/dr-grading"
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.23393863
-    description: "Archived model weights (Zenodo record)"
 authors:
   - family-names: Yasodharan
     given-names: "N. S."
+    orcid: "https://orcid.org/0009-0008-9703-1140"
     affiliation: "Department of Information Technology, PSG College of Technology, Coimbatore, India"
+    city: Coimbatore
+    region: Tamil Nadu
+    post-code: "641004"
+    country: IN
   - family-names: "Adithya Babu"
+    orcid: "https://orcid.org/0009-0007-0808-1975"
     affiliation: "Department of Information Technology, PSG College of Technology, Coimbatore, India"
+    city: Coimbatore
+    region: Tamil Nadu
+    post-code: "641004"
+    country: IN
   - family-names: Ramasami
     given-names: "N."
+    orcid: "https://orcid.org/0009-0005-1108-9228"
     affiliation: "Department of Information Technology, PSG College of Technology, Coimbatore, India"
+    city: Coimbatore
+    region: Tamil Nadu
+    post-code: "641004"
+    country: IN
   - family-names: Rohit
     given-names: "L. K."
+    orcid: "https://orcid.org/0009-0003-0709-1486"
     affiliation: "Department of Information Technology, PSG College of Technology, Coimbatore, India"
-  - family-names: Thamilselvi
-    given-names: "K. P."
-    affiliation: "Department of Information Technology, PSG College of Technology, Coimbatore, India"
+    city: Coimbatore
+    region: Tamil Nadu
+    post-code: "641004"
+    country: IN
 abstract: >-
   A pipeline for grading diabetic retinopathy from colour fundus photographs on the five-level ICDR scale. An image
   passes through an image-quality check, preprocessing, vessel and lesion segmentation, and an ordinal ConvNeXt-Tiny
@@ -32,13 +46,28 @@ abstract: >-
   the grade, and a written summary states the result and a reliability flag. The repository contains the inference,
   evaluation and training code, a local web demo and Docker image, the evaluation lists and per-image predictions that
   reproduce the reported results on the DDR and IDRiD test sets, and the manifest of the released model weights. It is a
-  research prototype and not a medical device.
+  research prototype and not a medical device. It is the software behind a companion study of external generalisation
+  of DR grading, submitted to Biomedical Signal Processing and Control.
+references:
+  - type: data
+    title: "Quality-Aware Explainable Framework for Diabetic Retinopathy Detection: trained model weights (v1.0.0)"
+    doi: 10.5281/zenodo.23393863
+    year: 2026
+    authors:
+      - family-names: Yasodharan
+        given-names: "N. S."
+      - family-names: "Adithya Babu"
+      - family-names: Ramasami
+        given-names: "N."
+      - family-names: Rohit
+        given-names: "L. K."
+    notes: "Archived model weights used by this software (research use only; see WEIGHTS_TERMS.md)."
 keywords:
   - diabetic retinopathy
-  - fundus image
+  - deep learning
   - ordinal regression
-  - CORN
-  - ConvNeXt
-  - uncertainty
+  - domain shift
+  - external validation
   - explainability
-  - image quality assessment
+  - uncertainty estimation
+  - fundus image

@@ -183,7 +183,27 @@ Two facts about the Stage-1 and Stage-4 numbers:
   model; the reliability wording is not a validated method.
 - Weights are for research use under the dataset terms ([`WEIGHTS_TERMS.md`](WEIGHTS_TERMS.md)).
 
+## Authors and acknowledgements
+
+N. S. Yasodharan, Adithya Babu, N. Ramasami and L. K. Rohit, Department of Information Technology, PSG College of
+Technology, Coimbatore, India (ORCID iDs in [`CITATION.cff`](CITATION.cff)).
+
+The authors thank Mrs. K. P. Thamilselvi, Assistant Professor (Sr. Gr.), Department of Information Technology, PSG
+College of Technology, for her guidance during this project. They also thank the providers of the APTOS 2019, EyePACS,
+EyeQ, IDRiD, TJDR and DDR datasets and of the LW-Net vessel-segmentation model, and acknowledge the GPU resources of
+Google Colaboratory used for training.
+
+During the preparation of this work the authors used Claude (Anthropic) to assist with writing and editing the text and
+with writing analysis and figure-generation code. After using this tool, the authors reviewed and edited the content as
+needed and take full responsibility for the content.
+
 ## Citation
 
-See [`CITATION.cff`](CITATION.cff); references of the methods and datasets are in [`docs/REFERENCES.md`](docs/REFERENCES.md).
-Code: Apache-2.0 ([`LICENSE`](LICENSE), third-party notices in [`NOTICE`](NOTICE)).
+Cite the software with [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button) and the trained weights
+with their archive, [doi:10.5281/zenodo.23393863](https://doi.org/10.5281/zenodo.23393863). The study this software was
+built for, *Training-data diversity, not pathology priors, drives external generalisation of deep diabetic retinopathy
+grading: a controlled multi-seed study*, has been submitted to *Biomedical Signal Processing and Control* and is not yet
+published, so it has no citation yet. References of the methods and datasets are in
+[`docs/REFERENCES.md`](docs/REFERENCES.md).
+Code: Apache-2.0 ([`LICENSE`](LICENSE), third-party notices in [`NOTICE`](NOTICE)); weights:
+[`WEIGHTS_TERMS.md`](WEIGHTS_TERMS.md).
